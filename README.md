@@ -8,7 +8,9 @@ server also hosts the documentation as its landing page.
 
 ### `GET` — `/v1/api/cert`
 Get the public key of the service, to verify a ticket yourself. The key
-is returned as a plain text PEM key file.
+is returned as a plain text PEM key file. The endpoint returns the
+currently used key by default. Other keys can be accessed by using their
+UUID as a path parameter (file name).
 
 ### `GET` — `/v1/api/ticket`
 Get a new signed ticket of the current date and time. Custom data can be
