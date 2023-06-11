@@ -53,6 +53,7 @@ aside ol {
 
 aside li {
   list-style-type: none;
+  font-size: 1rem;
 }
 
 aside a, aside a:visited, aside a:focus, aside a:hover {
