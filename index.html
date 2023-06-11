@@ -53,11 +53,14 @@
       
       <h3 id="api-cert"><div class="http-method-tag">GET</div> <code>/v1/api/cert</code> <a href="#api-cert"></a></h3>
       <p>
-        Returns the public key of the service, to allow checking whether a ticket is valid. The
-        key is returned as plain text in the PEM format.
+        Returns public keys of the service, to allow checking whether a ticket is valid. The key
+        is returned as plain text in the PEM format. As the key set is changed regularly the
+        service might have multiple public keys, identified by their UUID. The endpoint allows
+        access to each certificate by its UUID, or returns the currently used certificate if no
+        uuid is specified.
       </p>
       <div class="example">
-        <div class="title">Example request</div>
+        <div class="title">Example request (current key)</div>
         <div class="block">
           <code>curl timestamp.egimoto.com/v1/api/cert</code>
         </div>
@@ -70,6 +73,16 @@ MIIBCgKCAQEA2GpO1+gQWjNebi08AX4...
 ...
 ...
 -----END RSA PUBLIC KEY-----</code>
+        </div>
+      </div>
+      <p>
+        As described above, accessing a specific key is done by using its UUID as a path parameter
+        (or file name) in the URL.
+      </p>
+      <div class="example">
+        <div class="title">Example request (specific UUID)</div>
+        <div class="block">
+          <code>curl timestamp.egimoto.com/v1/api/cert/cacca902-b379-4a32-ae91-6ae6ece3bfbf</code>
         </div>
       </div>
       
@@ -96,6 +109,7 @@ MIIBCgKCAQEA2GpO1+gQWjNebi08AX4...
     "issuer":"timestamp.egimoto.com/v1",
     "timeStamp":"2023-06-10T19:39:12.341Z",
     "type":"v1",
+    "cert": "cacca902-b379-4a32-ae91-6ae6ece3bfbf",
     "customData": {
       "custom1":"value1",
       "custom2":"value2"
@@ -128,6 +142,9 @@ MIIBCgKCAQEA2GpO1+gQWjNebi08AX4...
                     <code>type</code> The type of timestamp ticket. It is always set to "v1".
                   </li>
                   <li>
+                    <code>cert</code> The UUID of the key set used to sign the ticket.
+                  </li>
+                  <li>
                     <code>customData</code> Custom JSON data provided by the user. If no data
                     is provided it is an empty object.
                   </li>
@@ -155,6 +172,9 @@ MIIBCgKCAQEA2GpO1+gQWjNebi08AX4...
         case of an invalid ticket additional textual error information can be provided
         separated by two line feeds. There can be multiple lines of error information. When
         sending a overly large body parsing might stop early with a http status code of 413.
+      </p>
+      <p>
+        To verify the ticket the key set defined by the ticket's "cert" field is used.
       </p>
       <div class="example">
         <div class="title">Example request</div>
