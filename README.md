@@ -26,8 +26,8 @@ The system expects a `.env` file for configuration. An example file is
 shown below.
 
 ```env
-PRIVATE_KEY="keys/private.pem"
-PUBLIC_KEY="keys/public.pem"
+KEYS_DIR="keys"
+KEY_PAIR_MAX_AGE="90"
 ISSUER_ID="your.domain.com/v1"
 HOME_PAGE= "index.html"
 ERROR_404_PAGE= "404.html"
@@ -36,6 +36,9 @@ ALL_VALIDATION_ERRORS= "false"
 CUSTOM_DATA_LIMIT= "1000"
 PORT="3000"
 ```
+
+Key sets are changed automatically and stored in the `KEY_DIR`. If the
+directory is empty, a new key set is automatically created on startup. 
 
 ## License
 This project was created by PreyMa and is licensed under the MIT license.
