@@ -1,5 +1,8 @@
 
 :root {
+  --color-page: white;
+  --color-text: black;
+  --color-tag-text: black;
   --color-method-tag-get: rgb(140, 255, 125);
   --color-method-tag-post: rgb(155 177 255);
   --color-header-link: rgb(180, 180, 180);
@@ -10,9 +13,20 @@
   --color-schema-tag: rgb(232 232 232);
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #171f2b;
+    --color-text: #e8e8e8;
+    --color-method-tag-get: rgb(19, 160, 0);
+    --color-method-tag-post: rgb(46, 76, 182);
+  }
+}
+
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 1rem;
+  color: var(--color-text);
+  background-color: var(--color-page);
 }
 
 body {
@@ -117,6 +131,7 @@ h1:hover > a, h2:hover > a, h3:hover > a {
   border-radius: 3rem;
   padding: 0.3rem 0.5rem;
   background-color: var(--color-code-title);
+  color: var(--color-tag-text);
 }
 
 .example .block > code {
@@ -135,6 +150,7 @@ li > code {
   font-size: 1rem;
   padding: 0 0.2rem;
   background-color: var(--color-schema-tag);
+  color: var(--color-tag-text);
   border-radius: 0.4rem;
 }
 
