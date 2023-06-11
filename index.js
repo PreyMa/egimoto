@@ -98,7 +98,7 @@ function loadKeys() {
   }
 
   // Create a new key pair if the newest key pair is too old
-  if( Date.now() - newestKeyPair.time > keyPairMaxAge) {
+  if( newestKeyPair === null || Date.now() - newestKeyPair.time > keyPairMaxAge) {
     const newKeyEntry= createKeyPair()
     keysMap.set(newKeyEntry.uuid, newKeyEntry)
     newestKeyPair= newKeyEntry
