@@ -8,6 +8,7 @@ import dotenv from 'dotenv'
 import * as uuid from 'uuid'
 import joi from 'joi'
 import helmet from 'helmet'
+import cors from 'cors'
 import {HttpError} from 'http-errors'
 
 dotenv.config()
@@ -84,6 +85,7 @@ const app= express()
 
 app.use(express.static('public'))
 app.use(helmet())
+app.use(cors())
 app.use(bodyParser.json({limit: maxNumCustomDataBytes+ 600}))
 
 // Homepage
