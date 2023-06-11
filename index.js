@@ -140,7 +140,7 @@ function createTicket(customData) {
   const content= {
     uuid: uuid.v4(),
     issuer: process.env.ISSUER_ID,
-    timeStamp: new Date().toISOString(),
+    timestamp: new Date().toISOString(),
     type: 'v1',
     cert: currentKeyPair.uuid,
     customData
@@ -162,7 +162,7 @@ const ticketSchema= joi.object({
   content: joi.object({
     uuid: joi.string().uuid({version: 'uuidv4'}).required(),
     issuer: joi.string().equal(process.env.ISSUER_ID).required(),
-    timeStamp: joi.string().isoDate().required(),
+    timestamp: joi.string().isoDate().required(),
     type: joi.string().equal('v1').required(),
     cert: joi.string().uuid({version: 'uuidv4'}).required(),
     customData: joi.object().unknown(true).required()
