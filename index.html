@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles.css">
+  <title>Timestamp</title>
+</head>
+<body>
+  <aside>
+    <ol>
+      <li>
+        <a href="#api">API</a>
+        <ol>
+          <li>
+            <a href="#api-cert"><code>/cert</code></a>
+          </li>
+          <li>
+            <a href="#api-ticket"><code>/ticket</code></a>
+          </li>
+          <li>
+            <a href="#api-verify"><code>/verify</code></a>
+          </li>
+        </ol>
+      </li>
+      <li>
+        <a href="#use-case">Use case</a>
+      </li>
+      <li>
+        <a href="#but-why">But why?</a>
+      </li>
+      <li>
+        <a href="#source-code">Source code</a>
+      </li>
+    </ol>
+  </aside>
+  <main>
+    <h1>A simple timestamp service</h1>
+    <article>
+      <p>
+        This is a simple timestamp service, that returns cryptographically signed JSON tickets
+        with the current time and a unique id. You can provide custom data to be included in 
+        the signed body of the ticket.
+      </p>
+
+      <p>
+        The service uses a simple REST API. Errors are communicated using http status codes 
+        and human readable error messages in plain text.
+      </p>
+
+      <h2 id="api">⚡ API <a href="#api"></a></h2>
+      
+      <h3 id="api-cert"><div class="http-method-tag">GET</div> <code>/v1/api/cert</code> <a href="#api-cert"></a></h3>
+      <p>
+        Returns the public key of the service, to allow checking whether a ticket is valid. The
+        key is returned as plain text in the PEM format.
+      </p>
+      <div class="example">
+        <div class="title">Example request</div>
+        <div class="block">
+          <code>curl timestamp.egimoto.com/v1/api/cert</code>
+        </div>
+      </div>
+      <div class="example">
+        <div class="title">Example response</div>
+        <div class="block">
+          <code>-----BEGIN RSA PUBLIC KEY-----
+MIIBCgKCAQEA2GpO1+gQWjNebi08AX4...
+...
+...
+-----END RSA PUBLIC KEY-----</code>
+        </div>
+      </div>
+      
+      <h3 id="api-ticket"><div class="http-method-tag">GET</div> <code>/v1/api/ticket</code> <a href="#api-ticket"></a></h3>
+      <p>
+        Returns a new ticket for the current date and time. It is signed with the service's
+        private key. Any query parameters in the url are added as custom data to the body of
+        the ticket as name-value pairs. The amount of custom data is limited by the maximal
+        length of the url. The section of query parameters (everything after and excluding
+        the "?") may only be 1kB of url encoded data.
+      </p>
+      <div class="example">
+        <div class="title">Example request</div>
+        <div class="block">
+          <code>curl "timestamp.egimoto.com/v1/api/ticket?custom1=value1&custom2=value2"</code>
+        </div>
+      </div>
+      <div class="example">
+        <div class="title">Example response (pretty printed)</div>
+        <div class="block">
+          <code>{
+  "content": {
+    "uuid":"e20993a2-6f22-4283-a0d7-3e462829d3ec",
+    "issuer":"timestamp.egimoto.com/v1",
+    "timeStamp":"2023-06-10T19:39:12.341Z",
+    "type":"v1",
+    "customData": {
+      "custom1":"value1",
+      "custom2":"value2"
+    }
+  },
+  "signature":"IK196stP7z...j9WWfEMokbJ1gg=="
+}</code>
+        </div>
+      </div>
+      <p>
+        <ul>
+          <li>
+            <code>ticket</code>
+            <ul>
+              <li>
+                <code>content</code> The body of the ticket. It is converted to JSON text and
+                signed using SHA-256 as the hash function and the service's private RSA key.
+                <ul>
+                  <li>
+                    <code>uuid</code> A <a href="https://datatracker.ietf.org/doc/html/rfc4122">RFC 4122</a> UUID V4
+                  </li>
+                  <li>
+                    <code>issuer</code> Name of the server issuing the timestamp ticket
+                  </li>
+                  <li>
+                    <code>timeStamp</code> An <a href="wikipedia.org/wiki/ISO_8601">ISO 8601</a> timestamp of the
+                    current date and time
+                  </li>
+                  <li>
+                    <code>type</code> The type of timestamp ticket. It is always set to "v1".
+                  </li>
+                  <li>
+                    <code>customData</code> Custom JSON data provided by the user. If no data
+                    is provided it is an empty object.
+                  </li>
+                </ul>
+              </li>
+              <li>
+                <code>signature</code> The cryptographic signature of the ticket's content. These
+                are 256 bytes (2048 bits) encoded in Base64. The string therefore has a length of
+                344 characters.
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </p>
+
+      <h3 id="api-verify"><div class="http-method-tag post">POST</div> <code>/v1/api/verify</code> <a href="#api-verify"></a></h3>
+      <p>
+        Checks whether a ticket is valid. The ticket is provided as a JSON body with the
+        appropriate content type of "application/json" set. The schema of the ticket and
+        its signature are checked. If the ticket is ok, a http status 200 is returned. If
+        the ticket is bad http status 422 is returned.
+      </p>
+      <p>
+        The body of the response is plain text and either contains "ok" or "invalid". In
+        case of an invalid ticket additional textual error information can be provided
+        separated by two line feeds. There can be multiple lines of error information. When
+        sending a overly large body parsing might stop early with a http status code of 413.
+      </p>
+      <div class="example">
+        <div class="title">Example request</div>
+        <div class="block">
+          <code>curl --header "Content-Type: application/json" \
+  --request POST --data @test.json \
+  "timestamp.egimoto.com/v1/api/verify"</code>
+        </div>
+      </div>
+      <div class="example">
+        <div class="title">Example response (valid)</div>
+        <div class="block">
+          <code>ok</code>
+        </div>
+      </div>
+      <div class="example">
+        <div class="title">Example response (invalid)</div>
+        <div class="block">
+          <code>invalid
+
+Schema error: "content.type" must be [v1]</code>
+        </div>
+      </div>
+
+      <h2 id="use-case">💡 Use case <a href="#use-case"></a></h2>
+      <p>
+        This service allows to proof to others, that certain data existed at a some point in
+        time. By putting the hash of a file into the custom data section with your name, you
+        can show that you were in possession of the file for at least since then. This can be
+        of useful for a decentralized message exchange to provide trustworthy transmission and
+        reading receipts. Or cases where a result has to be produced until a certain deadline
+        but the check happens sometime later.
+      </p>
+
+      <h2 id="but-why">🥝 But why?  <a href="#but-why"></a></h2>
+      <p>
+        I had some free time, and making this was a lot of fun. Maybe it can be of use to someone
+        at some point.
+      </p>
+
+      <h2 id="source-code">📃 Source code <a href="#source-code"></a></h2>
+      <p>
+        This is an open source project and all source code is publicly available on
+        <a href="https://www.github.com">GitHub</a>. Everything is licensed under the
+        <a href="https://choosealicense.com/licenses/mit/">MIT</a> license. The project
+        is based on Node.js and uses multiple packages.
+      </p>
+      <p>
+        We use: express, dotenv, uuid, helmet & joi <br>
+        Thanks to their respective developers and maintainers.
+      </p>
+
+    </article>
+  </main>
+  <p class="bottom-phrase">
+    Made with ❤️ & Node.js
+  </p>
+  <footer>
+    <div>
+      <h3>Links</h3>
+      <ul>
+        <li>
+          <a href="">Code on GitHub</a>
+        </li>
+        <li>
+          <a href="license.txt">License</a>
+        </li>
+      </ul>
+    </div>
+    <div>
+      <h3>Egimoto</h3>
+      <ul>
+        <li>
+          <a href="https://www.egimoto.com">Home</a>
+        </li>
+        <li>
+          <a href="https://www.egimoto.com/about">About</a>
+        </li>
+        <li>
+          <a href="https://www.egimoto.com/legal">Legal</a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>
