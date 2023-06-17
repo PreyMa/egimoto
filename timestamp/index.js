@@ -11,11 +11,28 @@ import joi from 'joi'
 import helmet from 'helmet'
 import cors from 'cors'
 import {HttpError} from 'http-errors'
+import logging from 'mqtt-logger'
 
 dotenv.config()
 
+// Setup logging
+const mqttLoggingOptions= {
+  broker: process.env.MQTT_BROKER,
+  client: process.env.MQTT_CLIENT,
+  username: process.env.MQTT_USERNAME,
+  password: process.env.MQTT_PASSWORD,
+  path: process.env.MQTT_TOPIC
+}
+
+logging.LoggerConfig.init(
+  new logging.ConsoleSink(),
+  new logging.MqttSink(mqttLoggingOptions),
+  new logging.FileSink({directory: './logs'})
+)
+const logger= new logging.Logger({name: 'timestamp', color: logging.Logger.Colors.green})
+
 function createKeyPair() {
-  console.log('Creating new key pair...')
+  logger.log('Creating new key pair...')
 
   // Create new key pair
   const keys= crypto.generateKeyPairSync('rsa', { modulusLength: 2048 })
@@ -123,7 +140,7 @@ function loadKeys() {
   }
 
   // console.log(keysMap)
-  console.log(`Loaded ${keysMap.size} keys. Current key pair is '${newestKeyPair.uuid}'`)
+  logger.log(`Loaded ${keysMap.size} keys. Current key pair is '${newestKeyPair.uuid}'`)
 
   return { keysMap, newestKeyPair }
 }
@@ -283,7 +300,7 @@ app.get('*', (req, res) => {
 // Error handler that either sends a plain text error for
 // API routes, or sends an html error page
 app.use((err, req, res, next) => {
-  console.error(`Caught error on url '${req.url}'`);
+  logger.error(`Caught error on url '${req.url}'`);
 
   // Plain text error for api endpoint
   if( req.url.startsWith('/v1/api') ) {
@@ -314,5 +331,5 @@ app.use((err, req, res, next) => {
 
 // Run the app
 app.listen(parseInt(process.env.PORT), () => {
-  console.log(`App running on port ${process.env.port}`)
+  logger.log(`App running on port ${process.env.port}`)
 })

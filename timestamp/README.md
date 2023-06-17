@@ -35,6 +35,11 @@ ERROR_500_PAGE= "500.html"
 ALL_VALIDATION_ERRORS= "false"
 CUSTOM_DATA_LIMIT= "1000"
 PORT="3000"
+MQTT_BROKER="mqtt://localhost"
+MQTT_CLIENT="timestamp"
+MQTT_USERNAME="testuser"
+MQTT_PASSWORD="1234"
+MQTT_TOPIC="/logging/timestamp"
 ```
 
 Key sets are changed automatically and stored in the `KEY_DIR`. If the
