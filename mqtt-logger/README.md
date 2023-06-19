@@ -84,6 +84,13 @@ Messages are printed with a formatted prefix:
 [22:21:24 17-Jun-2023] [my-logger] [info] Hello world
 ```
 
+The following options are supported with the following default values:
+```JS
+const options= {
+  showStats: true
+}
+```
+
 ### File
 This sink opens a file in a specified log directory and writes all log messages
 to it. The same file is used again after a restart if it is not yet too old or too
@@ -94,7 +101,7 @@ Individual log messages are printed with a prefix similar to the console sink.
 The text of stats messages is ignored, and only a JSON stringified object of all
 named parameters is written to the file.
 
-The following options are supported with the following default:
+The following options are supported with the following default values:
 ```JS
 const options= {
   fileName: 'logfile',
