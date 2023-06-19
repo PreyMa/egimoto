@@ -406,17 +406,7 @@ export class LoggerConfig {
     }
     return this._instance
   }
-
-  static init(...args) {
-    this._instance= new LoggerConfig(...args)
-  }
-
-  static close() {
-    if(this._instance) {
-      this._instance.close()
-    }
-  }
-
+    
   constructor(...sinks) {
     if(LoggerConfig._instance) {
       throw Error('Cannot define multiple logger configs')
@@ -424,7 +414,7 @@ export class LoggerConfig {
 
     LoggerConfig._instance= this
 
-    this._sinks= sinks
+    this._sinks= null
     this._activeLoggers= []
     this._uniqueIdCounter= 0
     this._longestLoggerNameLength= 0
@@ -432,6 +422,25 @@ export class LoggerConfig {
 
     // Create and add the internal logger instance
     const internalLoggerInstance= new InternalLogger()
+  }
+
+  hasInit() {
+    return this._sinks !== null
+  }
+
+  _ensureInit() {
+    if(!this.hasInit()) {
+      this.init()
+    }
+  }
+
+  init(...sinks) {
+    // Init may only be called once
+    if(this._sinks) {
+      throw Error('The logger config may only be initialized once')
+    }
+
+    this._sinks= sinks
 
     // Add default sink if no sinks were provided
     if(!this._sinks.length) {
@@ -455,25 +464,31 @@ export class LoggerConfig {
   }
 
   close() {
-    this._consoleSink.close()
-    this._sinks.forEach(s => s.close())
-    this._sinks.length= 0
+    if(this.hasInit()) {
+      this._consoleSink.close()
+      this._sinks.forEach(s => s.close())
+      this._sinks.length= 0
+    }
   }
 
   get internalInstance() {
+    this._ensureInit()
     return this._activeLoggers[0]
   }
 
   logMessage(logger, severity, argArray) {
+    this._ensureInit()
     const args= new MessageArguments( argArray )
     this._sinks.forEach(sink => sink.logMessage(logger, severity, args))
   }
 
   logStats(logger, argArray) {
+    this._ensureInit()
     this._sinks.forEach(sink => sink.logStats(logger, argArray))
   }
 
   logConsoleMessage(logger, severity, argArray) {
+    this._ensureInit()
     const args= new MessageArguments( argArray )
     this._consoleSink.logMessage(logger, severity, args)
   }
