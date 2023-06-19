@@ -187,11 +187,19 @@ export class MqttLogMessage extends MqttMessage {
 export class MqttStatsMessage extends MqttMessage {
   constructor( loggerName, statsObject ) {
     super('stats')
-    if(statsObject.hasOwnProperty('toJSONString') || statsObject.hasOwnProperty('logger')) {
-      throw Error(`Cannot set keys 'toJSONString' & 'logger' in stats object`)
-    }
+
+    this._validate(statsObject)
     Object.assign(this, statsObject)
     this.logger= loggerName
+  
+  }
+
+  static _disallowedFields= ['toJSONString', 'logger', 'time', 'type']
+  _validate(statsObject) {
+    const valid= MqttStatsMessage._disallowedFields.some(x => statsObject.hasOwnProperty(x))
+    if(!valid) {
+      throw Error(`Disallows field name in stats object`)
+    }
   }
 }
 
