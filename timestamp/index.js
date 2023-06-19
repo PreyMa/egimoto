@@ -24,7 +24,7 @@ const mqttLoggingOptions= {
   path: process.env.MQTT_TOPIC
 }
 
-logging.LoggerConfig.init(
+logging.LoggerConfig.the().init(
   new logging.ConsoleSink(),
   new logging.MqttSink(mqttLoggingOptions),
   new logging.FileSink({directory: './logs'})
