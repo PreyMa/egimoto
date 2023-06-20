@@ -596,8 +596,6 @@ class InternalLogger extends Logger {
     super({color: colors.white, name: 'Logger'})
   }
 
-  info(...args) { LoggerConfig.the().logMessage(this, 'info', args) }
-  warn(...args) { LoggerConfig.the().logMessage(this, 'warn', args) }
   error(...args) { LoggerConfig.the().logConsoleMessage(this, 'error', args) }
 }
 
