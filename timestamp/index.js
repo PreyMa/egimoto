@@ -231,6 +231,24 @@ setInterval(() => {
   }
 }, 10* 60* 1000)
 
+let numTicketsIssued= 0n, numTicketsIssuedPrev= 0n
+let numTicketsVerified= 0n, numTicketsVerifiedPrev= 0n
+let numPageVisits= 0n, numPageVisitsPrev= 0n
+
+// Add handler to send stat messages in regular intervals
+setInterval(() => {
+  // Send stats every 5 minutes
+  logger.stats(
+    {issued: numTicketsIssued- numTicketsIssuedPrev}, ` issued (${numTicketsIssued} total),`,
+    {verified: numTicketsVerified- numTicketsVerifiedPrev}, ` verified (${numTicketsVerified} total),`,
+    {tickets: numPageVisits- numPageVisitsPrev}, ` visits (${numPageVisits} total),`
+  )
+
+  numTicketsIssuedPrev= numTicketsIssued
+  numTicketsVerifiedPrev= numTicketsVerified
+  numPageVisitsPrev= numPageVisits
+}, 5* 60* 1000)
+
 // Create the express app
 const app= express()
 app.use(express.static('public'))
@@ -241,6 +259,7 @@ app.use(bodyParser.json({limit: maxNumCustomDataBytes+ 600}))
 // Homepage
 app.get('/', (req, res) => {
   res.send(homePage)
+  numPageVisits++
 })
 
 // API -> /cert returns the requested public key as PEM file string
@@ -273,6 +292,8 @@ app.get('/v1/api/ticket', (req, res) => {
   const customData= req.query || {}
   const ticket= createTicket(customData)
   res.json(ticket)
+
+  numTicketsIssued++
 })
 
 // API -> /verify checks a ticket and returns errors as plain text
@@ -282,6 +303,8 @@ app.post('/v1/api/verify', (req, res) => {
     .status(result.error ? 422 : 200)
     .type('text/plain')
     .send(result.error ? `invalid\n\n${result.error}` : 'ok')
+
+  numTicketsVerified++
 })
 
 // API -> Send 404 error as plain text
