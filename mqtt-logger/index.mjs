@@ -9,6 +9,12 @@ function abstractMethod() {
   throw Error('Abstract method')
 }
 
+function bigIntStringify(data) {
+  // Allow stringifying big ints by manually converting them to a string value
+  function replacer(key, value) { return typeof value === "bigint" ? value.toString() : value }
+  return JSON.stringify(data, replacer)
+}
+
 /**
  * Message Arguments class
  * Messages provided to 'log(...)' are stored as an array internally and
@@ -190,7 +196,7 @@ export class MqttMessage {
   }
 
   toJSONString() {
-    return JSON.stringify(this)
+    return bigIntStringify(this)
   }
 }
 
@@ -444,7 +450,7 @@ export class FileSink extends Sink {
 
   logStats(logger, args) {
     const statsObject= this._extractStatsObjectFromArgs(args)
-    this._printMessage(logger, 'stats', JSON.stringify(statsObject))
+    this._printMessage(logger, 'stats', bigIntStringify(statsObject))
   }
 }
 
