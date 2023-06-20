@@ -555,6 +555,14 @@ export class LoggerConfig {
     const args= new MessageArguments( argArray )
     this._consoleSink.logMessage(logger, severity, args)
   }
+
+  logger(id) {
+    if( typeof id === 'number' ) {
+      return this._activeLoggers.find(logger => logger._id === id) || null
+    }
+
+    return this._activeLoggers.find(logger => logger._name === id) || null
+  }
 }
 
 /**
@@ -575,13 +583,29 @@ export class Logger {
     this._color= config.color
     this._name= config.name || `logger-${this.id}`
     this._id= LoggerConfig.the().registerLogger(this)
+    this._isMuted= false
+  }
+
+  mute(value= true) {
+    this._isMuted= value
+  }
+
+  _logMessageIfUnmuted(severity, args) {
+    if(!this._isMuted) {
+      LoggerConfig.the().logMessage(this, severity, args)
+    }
   }
 
   log(...args) { this.info(...args) }
-  info(...args) { LoggerConfig.the().logMessage(this, 'info', args) }
-  warn(...args) { LoggerConfig.the().logMessage(this, 'warn', args) }
-  error(...args) { LoggerConfig.the().logMessage(this, 'error', args) }
-  stats(...args) { LoggerConfig.the().logStats(this, args) }
+  info(...args) { this._logMessageIfUnmuted('info', args) }
+  warn(...args) { this._logMessageIfUnmuted('warn', args) }
+  error(...args) { this._logMessageIfUnmuted('error', args) }
+
+  stats(...args) {
+    if(!this._isMuted) {
+      LoggerConfig.the().logStats(this, args)
+    }
+  }
 }
 
 /**
@@ -596,7 +620,11 @@ class InternalLogger extends Logger {
     super({color: colors.white, name: 'Logger'})
   }
 
-  error(...args) { LoggerConfig.the().logConsoleMessage(this, 'error', args) }
+  error(...args) {
+    if(!this._isMuted) {
+      LoggerConfig.the().logConsoleMessage(this, 'error', args)
+    }
+  }
 }
 
 
