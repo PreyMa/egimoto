@@ -232,8 +232,8 @@ export class MqttStatsMessage extends MqttMessage {
 
   static _disallowedFields= ['toJSONString', 'logger', 'time', 'type']
   _validate(statsObject) {
-    const valid= MqttStatsMessage._disallowedFields.some(x => statsObject.hasOwnProperty(x))
-    if(!valid) {
+    const invalid= MqttStatsMessage._disallowedFields.some(x => statsObject.hasOwnProperty(x))
+    if(invalid) {
       throw Error(`Disallows field name in stats object`)
     }
   }
