@@ -9,6 +9,13 @@ function abstractMethod() {
   throw Error('Abstract method')
 }
 
+/**
+ * Message Arguments class
+ * Messages provided to 'log(...)' are stored as an array internally and
+ * need to be formatted as a message string before printing. The object
+ * caches the formatted string so that multiple sinks do not need to 
+ * regenerate it again.
+ */
 export class MessageArguments {
   constructor(args= []) {
     this._args= args
@@ -39,6 +46,12 @@ export class MessageArguments {
   }
 }
 
+/**
+ * Sink base class
+ * Abstract base class for log message sinks. Provides common
+ * utilities. Sinks are attached to the logger config once during
+ * startup to process generated log messages.
+ */
 export class Sink {
   attach() { abstractMethod() }
   close() { abstractMethod() }
@@ -120,6 +133,11 @@ export class Sink {
   }
 }
 
+/**
+ * Console Sink class
+ * Prints log messages to the console using 'console.log()' as formatted text
+ * with a time and severity prefix prepended.
+ */
 export class ConsoleSink extends Sink {
   constructor(config= {}) {
     super()
@@ -160,6 +178,11 @@ export class ConsoleSink extends Sink {
   }
 }
 
+/**
+ * Mqtt Message base class
+ * Base class for all mqtt message packets sent to the 
+ * mqtt broker.
+ */
 export class MqttMessage {
   constructor(type) {
     this.time= new Date().toISOString()
@@ -171,10 +194,19 @@ export class MqttMessage {
   }
 }
 
+/**
+ * Mqtt Hello Message packet class
+ * This message is sent once during startup to indicate a new connection.
+ */
 export class MqttHelloMessage extends MqttMessage {
   constructor() { super('hello') }
 }
 
+/**
+ * Mqtt Log Message packet class
+ * Log messages are sent as log packets to the broker containing the
+ * formatted text message.
+ */
 export class MqttLogMessage extends MqttMessage {
   constructor( loggerName, severity, messageString ) {
     super('log')
@@ -184,6 +216,11 @@ export class MqttLogMessage extends MqttMessage {
   }
 }
 
+/**
+ * Mqtt Stats Message packet class
+ * Stats messages are sent as stringified JSON of the named parameters
+ * only to the mqtt broker.
+ */
 export class MqttStatsMessage extends MqttMessage {
   constructor( loggerName, statsObject ) {
     super('stats')
@@ -191,7 +228,6 @@ export class MqttStatsMessage extends MqttMessage {
     this._validate(statsObject)
     Object.assign(this, statsObject)
     this.logger= loggerName
-  
   }
 
   static _disallowedFields= ['toJSONString', 'logger', 'time', 'type']
@@ -203,6 +239,11 @@ export class MqttStatsMessage extends MqttMessage {
   }
 }
 
+/**
+ * Mqtt Sink class
+ * Log messages are converted to mqtt message packets and are sent to
+ * a mqtt broker.
+ */
 export class MqttSink extends Sink {
   constructor(config) {
     super()
@@ -262,6 +303,16 @@ export class MqttSink extends Sink {
   }
 }
 
+/**
+ * File Sink class
+ * Log messages are written to a log file opened or created during startup.
+ * The same log file is used repeatedly until it is either too large or too
+ * old. These files can be optionally compressed to save space on disk.
+ * Each message is printed to the file in the same way as the console sink
+ * would, with the exception of stats messages. To make automatic analysis
+ * of statistics data simpler, stats messages are printed as stringified
+ * JSON of the named parameters.
+ */
 export class FileSink extends Sink {
   constructor(config) {
     super()
@@ -397,6 +448,18 @@ export class FileSink extends Sink {
   }
 }
 
+/**
+ * Logger Config class
+ * The logger config is a global singleton managing all active
+ * logger instances and sinks. It handles registration of new
+ * loggers and distributes incoming log messages to the sinks
+ * for processing.
+ * If the config is not initialized manually during startup,
+ * it will be created automatically with only a console sink by
+ * default. A logger instance for use by the logger framework
+ * itself is always created, as well as a console sink, which
+ * might not be accessible to the user if not created manually.
+ */
 export class LoggerConfig {
   static _instance= null;
 
@@ -494,6 +557,12 @@ export class LoggerConfig {
   }
 }
 
+/**
+ * Logger class
+ * Each logger instance has a name and an associated color. On creation
+ * the logger registers itself at the logger config. Log messages are
+ * then submitted to the logger config to be processed by the sinks.
+ */
 export class Logger {
   static Colors= colors
 
@@ -515,6 +584,13 @@ export class Logger {
   stats(...args) { LoggerConfig.the().logStats(this, args) }
 }
 
+/**
+ * Internal Logger class
+ * The internal logger is created for the logger framework itself to print
+ * messages. The main difference to the regular is, that error messages are
+ * always handled by a dedicated console sink in case everything else is
+ * dysfunctional at the moment.
+ */
 class InternalLogger extends Logger {
   constructor() {
     super({color: colors.white, name: 'Logger'})
