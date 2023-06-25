@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Not found</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body {
+      display: flex;
+      flex-direction: row;
+      font-family: sans-serif;
+      font-size: 1.1rem;
+      line-height: 2rem;
+      height: 100vh;
+      background-color: lightsteelblue;
+    }
+    .left {
+      min-width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-end;
+      background-color: white;
+      box-shadow: 6px 0px 7px 0px #00000040;
+    }
+    .content {
+      width: 480px;
+      padding-left: 2rem;
+      padding-right: 1rem;
+    }
+    .right {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .about {
+      color: white;
+      margin: 1rem;
+    }
+    .graphic {
+      position: absolute;
+      top: 33%;
+      right: -16%;
+      font-size: 100vh;
+      color: #93accd;
+      z-index: -1;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    code {
+      font-family: 'Courier New', Courier, monospace;
+    }
+    a, a:visited, a:hover {
+      color: inherit;
+      text-decoration: underline;
+      transition: 0.3s;
+    }
+    a:hover {
+      color: #5268ff;
+    }
+    a::before {
+      content: "🔗";
+      display: inline-block;
+      font-size: 0.7rem;
+    }
+    @media screen and (max-width: 780px) {
+      body {
+        flex-direction: column;
+      }
+      .left {
+        min-height: calc(50% - 4rem);
+        flex-direction: row;
+        padding-bottom: 4rem;
+        box-shadow: 0px 6px 7px 0px #00000040;
+      }
+      .graphic {
+        top: 48%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="content">
+      <h1>Not found</h1>
+      <p>
+        The page <code>{{requestDomain}}</code> does not exist. Go back to our main site <a href="https://www.egimoto.com"><code>egimoto.com</code></a>.
+      </p>
+    </div>
+  </div>
+  <div class="right">
+    <div class="graphic">?</div>
+    <div class="about">
+      Proxy server of egimoto.com
+    </div>
+  </div>
+</body>
+</html>

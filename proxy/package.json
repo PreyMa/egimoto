@@ -1,0 +1,15 @@
+{
+  "name": "egimoto-proxy",
+  "version": "1.0.0",
+  "description": "Proxy server to handle and distribute request to the egimoto network",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "PreyMa",
+  "license": "MIT",
+  "dependencies": {
+    "http-proxy": "^1.18.1",
+    "mqtt": "^4.3.7"
+  }
+}
