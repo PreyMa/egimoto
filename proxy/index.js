@@ -1,12 +1,10 @@
-'use strict';
-
-const fs = require('fs');
-const tls = require('tls');
-const https = require('https');
-const http = require('http');
-const path = require('path');
-const mqtt = require('mqtt');
-const httpProxy= require('http-proxy');
+import fs from 'node:fs'
+import tls from 'node:tls'
+import https from 'node:https'
+import http from 'node:http'
+import path from 'node:path'
+import mqtt from 'mqtt'
+import httpProxy from 'http-proxy'
 
 let notFoundPageTemplate= 'Unknown host domain name: {{requestDomain}}';
 
