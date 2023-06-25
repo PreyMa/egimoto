@@ -11,6 +11,6 @@
   "license": "MIT",
   "dependencies": {
     "http-proxy": "^1.18.1",
-    "mqtt": "^4.3.7"
+    "mqtt-logger": "https://gitpkg.now.sh/PreyMa/egimoto/mqtt-logger?main"
   }
 }

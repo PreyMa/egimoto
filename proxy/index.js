@@ -4,10 +4,11 @@ import url from 'node:url'
 import https from 'node:https'
 import http from 'node:http'
 import path from 'node:path'
-import mqtt from 'mqtt'
+import logging from 'mqtt-logger'
 import httpProxy from 'http-proxy'
 
 let notFoundPageTemplate= 'Unknown host domain name: {{requestDomain}}';
+const logger= new logging.Logger({name: 'proxy', color: logging.Logger.Colors.green})
 
 function abstractMethod() {
   throw Error('Abstract method');
@@ -34,11 +35,6 @@ function genericMax(a, b) {
   return a > b ? a : b;
 }
 
-function bigIntStringify(data) {
-  function replacer(key, value) { return typeof value === "bigint" ? value.toString() : value }
-  return JSON.stringify(data, replacer);
-}
-
 class HostEntry {
   static create(name, obj, certificates) {
     const hasRedirectField= obj.hasOwnProperty('redirect');
@@ -52,7 +48,7 @@ class HostEntry {
 
     if( hasProxyField ) {
       if( !obj.proxy.startsWith('http://') ) {
-        console.warn(`Warning: Missing 'http://' prefix on proxy file for host: ${name}`);
+        logger.warn(`Warning: Missing 'http://' prefix on proxy file for host: ${name}`);
       }
     }
 
@@ -62,7 +58,7 @@ class HostEntry {
       }
 
       if( hasCertField ) {
-        console.warn(`Host '${name}' has ignored field 'cert'`);
+        logger.warn(`Host '${name}' has ignored field 'cert'`);
       }
 
       if( hasProxyField ) {
@@ -104,7 +100,7 @@ class HostEntry {
   sendInvalidDomainUpgradeError(req, socket, insecure) {
     const domain= req.headers['host'];
     const prefix= this.insecurePrefix( insecure );
-    console.error(`${prefix}upgrade: Invalid domain: ${domain}`);
+    logger.error(`${prefix}upgrade: Invalid domain: ${domain}`);
     socket.end(`Proxy-Error: Upgrade to invalid domain: ${domain}`);
   }
 
@@ -115,7 +111,7 @@ class HostEntry {
   }
 
   promoteRedirectToSecure(req, res) {
-    console.log('insecure receive: promote redirect to secure:', req.headers['host']);
+    logger.log('insecure receive: promote redirect to secure:', req.headers['host']);
     this.redirectRequest(req, res, req.headers['host']);
   }
 
@@ -124,8 +120,8 @@ class HostEntry {
       proxy.web( req, res, { target: this.target } );
     } catch(e) {
       const prefix= this.securePrefix(insecure);
-      console.error(`Could not proxy ${prefix}request to: ${this.target}`);
-      console.error(e);
+      logger.error(`Could not proxy ${prefix}request to: ${this.target}`);
+      logger.error(e);
 
       if( !res.writableEnded ) {
           res.end('Proxy-Error: Server currently not available');
@@ -138,8 +134,8 @@ class HostEntry {
       proxy.ws(req, socket, head, { target: this.target });
     } catch(e) {
       const prefix= this.insecurePrefix(insecure);
-      console.error(`Could not proxy ${prefix}websocket to: ${this.target}`);
-      console.error(e);
+      logger.error(`Could not proxy ${prefix}websocket to: ${this.target}`);
+      logger.error(e);
 
       if( !socket.writableEnded ) {
           socket.end('Proxy-Error: Server currently not available');
@@ -154,7 +150,7 @@ class HostEntry {
 class UnknownEntry extends HostEntry {
   sendError404(req, res) {
     const domain= req.headers['host'];
-    console.log(`insecure receive: unknown domain: ${domain}`);
+    logger.log(`insecure receive: unknown domain: ${domain}`);
 
     const message= notFoundPageTemplate.replaceAll('{{requestDomain}}', domain);
     res.writeHead(404);
@@ -179,7 +175,7 @@ class UnknownEntry extends HostEntry {
 
   handleSNICallback( cb, domain ) {
     cb( new Error("Domain not found"), null );
-    console.log( 'SNI-Error: domain not found:', domain );
+    logger.log( 'SNI-Error: domain not found:', domain );
   }
 }
 
@@ -199,7 +195,7 @@ class SecureRedirectHost extends HostEntry {
   }
 
   handleSecureWebRequest(proxy, req, res) {
-    console.log('receive: redirect to secure:', this.target);
+    logger.log('receive: redirect to secure:', this.target);
     this.redirectRequest(req, res, this.target, false);
   }
 
@@ -226,12 +222,12 @@ class SecureProxyHost extends HostEntry {
   }
 
   handleSecureWebRequest(proxy, req, res) {
-    console.log('receive: proxiing request to secure:', this.target, req.url);
+    logger.log('receive: proxiing request to secure:', this.target, req.url);
     this.proxyWebRequest(proxy, req, res, false);
   }
 
   handleSecureUpgradeRequest(proxy, req, socket, head) {
-    console.log('upgrade: proxiing websocket to secure:', this.target, req.url);
+    logger.log('upgrade: proxiing websocket to secure:', this.target, req.url);
     this.proxyUpgradeRequest(proxy, req, socket, head, false);
   }
 
@@ -246,7 +242,7 @@ class SecureProxyHost extends HostEntry {
  */
 class InsecureRedirectHost extends HostEntry {
   handleInsecureWebRequest(proxy, req, res) {
-    console.log('insecure receive: redirecting to insecure:', this.target);
+    logger.log('insecure receive: redirecting to insecure:', this.target);
     this.redirectRequest(req, res, this.target, true);
   }
 
@@ -255,7 +251,7 @@ class InsecureRedirectHost extends HostEntry {
   }
 
   handleSecureWebRequest(proxy, req, res) {
-    console.log('receive: demote redirect to insecure (redirect):', this.target);
+    logger.log('receive: demote redirect to insecure (redirect):', this.target);
     this.redirectRequest(req, res, this.target, true);
   }
 
@@ -274,18 +270,18 @@ class InsecureRedirectHost extends HostEntry {
  */
 class InsecureProxyHost extends HostEntry {
   handleInsecureWebRequest(proxy, req, res) {
-    console.log('insecure receive: proxiing request to insecure:', this.target, req.url);
+    logger.log('insecure receive: proxiing request to insecure:', this.target, req.url);
     this.proxyWebRequest(proxy, req, res, true);
   }
 
   handleInsecureUpgradeRequest(proxy, req, socket, head) {
-    console.log('insecure upgrade: proxiing websocket to insecure:', this.target, req.url);
+    logger.log('insecure upgrade: proxiing websocket to insecure:', this.target, req.url);
     this.proxyUpgradeRequest(proxy, req, socket, head, true);
   }
 
   handleSecureWebRequest(proxy, req, res) {
     const domain= req.headers['host'];
-    console.log('receive: demote redirect to insecure (proxy):', domain);
+    logger.log('receive: demote redirect to insecure (proxy):', domain);
     this.redirectRequest(req, res, domain, true);
   }
 
@@ -302,8 +298,30 @@ class InsecureProxyHost extends HostEntry {
  * Server script entry point
  */
 (function() {
+  const dirName= url.fileURLToPath(new URL('.', import.meta.url))
   const config= JSON.parse( rdFile('./config.json') );
 
+  // Create mqtt logger
+  if( config.hasOwnProperty('mqtt') ) {
+    checkKeys(config.mqtt, ['gateway', 'client', 'username', 'password', 'path'], key => {
+      stop(`Missing config value ${key} in mqtt settings`);
+    });
+
+    const mqttLoggingOptions= {
+      broker: config.mqtt.gateway,
+      client: config.mqtt.client,
+      username: config.mqtt.username,
+      password: config.mqtt.password,
+      path: config.mqtt.path
+    }
+
+    logging.LoggerConfig.the().init(
+      new logging.ConsoleSink(),
+      new logging.MqttSink(mqttLoggingOptions)
+    )
+  }
+
+  // Load main config data
   checkKeys( config, ['httpPort', 'httpsPort', 'mainCert', 'certificates', 'hosts'], k => {
     stop(`Missing config parameter '${k}'`);
   });
@@ -366,7 +384,7 @@ class InsecureProxyHost extends HostEntry {
   });
 
   proxy.on('error', e => {
-    console.error('Caught proxy error:', e);
+    logger.error('Caught proxy error:', e);
   });
 
   // Stat counters -> all of them are big ints to prevent overflows
@@ -381,56 +399,24 @@ class InsecureProxyHost extends HostEntry {
   proxy.on('close', () => activeWebsocketCount--)
   proxy.on('proxyRes', () => requestCount++);
 
-  // Create mqtt client
-  let mqttClient= null;
-  if( config.hasOwnProperty('mqtt') ) {
-    checkKeys(config.mqtt, ['gateway', 'client', 'username', 'password', 'path'], key => {
-      stop(`Missing config value ${key} in mqtt settings`);
-    });
-
-    if(!config.hasOwnProperty('enable') || config.enable) {
-      const options= {
-        clientId: config.mqtt.client,
-        username: config.mqtt.username,
-        password: config.mqtt.password
-      };
-      mqttClient= mqtt.connect(config.mqtt.gateway, options);
-
-      mqttClient.on('connect', () => console.log('MQTT client connected'));
-      mqttClient.on('error', err => {
-        console.error('MQTT error received');
-        console.error(err);
-      });
-
-      const packet= {timestamp: isoTime(), type: 'hello'};
-      mqttClient.publish(config.mqtt.path, JSON.stringify(packet));
-    }
-  }
-
+  // Start interval timer to print stats
   setInterval( () => {
-      console.log(`Stats: ${requestCount} requests, ${websocketCount} websockets (active ${activeWebsocketCount})`);
+    logger.stats(
+      {requests: requestCount - prevRequestCount}, ` requests (total ${requestCount}),`,
+      {websockets: websocketCount- prevWebsocketCount}, ` websockets (total ${websocketCount}) `,
+      '(active ', {activeWebsocketCount: maxActiveWebsocketCount}, ')'
+    );
 
-      if(mqttClient) {
-        const packet= {
-          timestamp: isoTime(),
-          type: 'stats',
-          websockets: websocketCount- prevWebsocketCount,
-          requests: requestCount - prevRequestCount,
-          activeWebsockets: maxActiveWebsocketCount
-        };
-        mqttClient.publish(config.mqtt.path, bigIntStringify(packet));
-
-        // Reset the stats counters for the next 30s time window
-        prevWebsocketCount= websocketCount;
-        prevRequestCount= requestCount;
-        maxActiveWebsocketCount= activeWebsocketCount;
-      }
-    }, 30000);
+    // Reset the stats counters for the next 30s time window
+    prevWebsocketCount= websocketCount;
+    prevRequestCount= requestCount;
+    maxActiveWebsocketCount= activeWebsocketCount;
+  }, 30000);
 
   // Http proxy server handling insecure requests
   const insecureServer= http.createServer( (req, res) => {
     findHostOrUnkown(req.headers['host']).handleInsecureWebRequest(proxy, req, res);
-  }).listen( config.httpPort, function() { console.log(`Listening http port: ${this.address().port}`); });
+  }).listen( config.httpPort, function() { logger.log(`Listening http port: ${this.address().port}`); });
 
   // Handle insecure websockets
   insecureServer.on('upgrade', (req, socket, head) => {
@@ -449,7 +435,7 @@ class InsecureProxyHost extends HostEntry {
   // Https proxy server handling secure requests
   const secureServer= https.createServer( secureOptions, (req, res) => {
     findHostOrUnkown(req.headers['host']).handleSecureWebRequest(proxy, req, res);
-  }).listen( config.httpsPort, function() { console.log(`Listening https port: ${this.address().port}`); });
+  }).listen( config.httpsPort, function() { logger.log(`Listening https port: ${this.address().port}`); });
 
   // Handle secure websockets
   secureServer.on('upgrade', (req, socket, head) => {
