@@ -29,9 +29,10 @@ shown below.
 KEYS_DIR="keys"
 KEY_PAIR_MAX_AGE="90"
 ISSUER_ID="your.domain.com/v1"
-HOME_PAGE= "index.html"
-ERROR_404_PAGE= "404.html"
-ERROR_500_PAGE= "500.html"
+HOME_PAGE= ""
+ERROR_404_PAGE= ""
+ERROR_500_PAGE= ""
+PUBLIC_DIR= ""
 ALL_VALIDATION_ERRORS= "false"
 CUSTOM_DATA_LIMIT= "1000"
 PORT="3000"
@@ -43,7 +44,8 @@ MQTT_TOPIC="/logging/timestamp"
 ```
 
 Key sets are changed automatically and stored in the `KEY_DIR`. If the
-directory is empty, a new key set is automatically created on startup. 
+directory is empty, a new key set is automatically created on startup.
+Keep paths to hosted webpages empty to use the provided markup files.
 
 ## License
 This project was created by PreyMa and is licensed under the MIT license.

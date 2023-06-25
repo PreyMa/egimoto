@@ -3,6 +3,7 @@
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import url from 'node:url'
 import express from 'express'
 import bodyParser from 'body-parser'
 import dotenv from 'dotenv'
@@ -12,6 +13,8 @@ import helmet from 'helmet'
 import cors from 'cors'
 import {HttpError} from 'http-errors'
 import logging from 'mqtt-logger'
+
+const dirName= url.fileURLToPath(new URL('.', import.meta.url))
 
 dotenv.config()
 
@@ -147,9 +150,9 @@ function loadKeys() {
 
 function loadPages() {
   return {
-    homePage: fs.readFileSync(process.env.HOME_PAGE, 'utf8'),
-    error404Page: fs.readFileSync(process.env.ERROR_404_PAGE, 'utf8'),
-    error500Page: fs.readFileSync(process.env.ERROR_500_PAGE, 'utf8')
+    homePage: fs.readFileSync(process.env.HOME_PAGE || path.join(dirName, 'index.html'), 'utf8'),
+    error404Page: fs.readFileSync(process.env.ERROR_404_PAGE || path.join(dirName, '404.html'), 'utf8'),
+    error500Page: fs.readFileSync(process.env.ERROR_500_PAGE || path.join(dirName, '500.html'), 'utf8')
   }
 }
 
@@ -251,7 +254,7 @@ setInterval(() => {
 
 // Create the express app
 const app= express()
-app.use(express.static('public'))
+app.use(express.static(process.env.PUBLIC_DIR || path.join(dirName,'public')))
 app.use(helmet())
 app.use(cors())
 app.use(bodyParser.json({limit: maxNumCustomDataBytes+ 600}))
