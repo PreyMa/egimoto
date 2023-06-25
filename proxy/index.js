@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import tls from 'node:tls'
+import url from 'node:url'
 import https from 'node:https'
 import http from 'node:http'
 import path from 'node:path'
@@ -317,7 +318,8 @@ class InsecureProxyHost extends HostEntry {
 
   // Load 404 page if one is specified
   if( config.hasOwnProperty('notFoundPage') ) {
-    notFoundPageTemplate= rdFile(config.notFoundPage);
+    const notFoundPagePath= config.notFoundPage === 'default' ? path.join(dirName, 'notFound.html') : config.notFoundPage;
+    notFoundPageTemplate= rdFile(notFoundPagePath);
   }
 
   // Create secure context for each certificate
