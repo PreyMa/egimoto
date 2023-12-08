@@ -83,7 +83,7 @@ class Talker {
     this.activeElem.classList.toggle('inactive', action === 'end')
     this.activeElem.title= action === 'start' ? lang['active'] : lang['inactive']
 
-    this.connectionElem.title= external ? lang['network call'] : lang['radio call']
+    this.connectionElem.title= external ? lang['network call'] : lang['rf call']
     this.connectionElem.firstElementChild.src= external ? '/address.svg' : '/radio.svg'
 
     this.modeElem.innerText= type || typ

@@ -9,8 +9,9 @@ export default {
     "active": "aktiv",
     "inactive": "inaktiv",
     "network call": "Netzwerk-Anruf",
-    "radio call": "Funkspruch",
-    "empty table": "Noch keine Verbindungen anzuzeigen",
+    "rf call": "HF-Eingabe",
+    "empty table": "Noch keine aufgezeichneten Gespräche",
+    "timestamp": "Zeitstempel",
     "keep entries": "Einträge behalten"
   },
   "en": {
@@ -23,8 +24,24 @@ export default {
     "active": "active",
     "inactive": "inactive",
     "network call": "Network call",
-    "radio call": "Radio call",
+    "rf call": "RF call",
     "empty table": "No connections to display yet",
+    "timestamp": "Timestamp",
     "keep entries": "Keep entries"
+  },
+  "cz": {
+    "Active": "Aktivní",
+    "connection": "Připojení",
+    "mode": "Mode",
+    "call": "Konverzace",
+    "duration": "Trvání",
+    "description": "Digital Voice Dashboard of the OE3XHU club station developed by @PreyMa & @OE3TEC",
+    "active": "aktivní",
+    "inactive": "neaktivní",
+    "network call": "Síťové volání",
+    "rf call": "Vysokofrekvenční volání",
+    "empty table": "Zatím žádné nahrané hovory",
+    "timestamp": "Časové razítko",
+    "keep entries": "Uchovávejte záznamy"
   }
 }
