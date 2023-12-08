@@ -17,6 +17,9 @@ repository.
 
   Install via GitPkg: `npm install 'https://gitpkg.now.sh/PreyMa/egimoto/proxy?main'`
 
+- __Digital Voice Dashboard:__ Dashboard for the digital voice radio [MMVDM software](https://github.com/g4klx/MMDVMHost)
+
+  Install via GitPkg: `npm install 'https://gitpkg.now.sh/PreyMa/egimoto/digital-voice-dashboard?main'`
 
 ## Packages
 
