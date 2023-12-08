@@ -51,8 +51,13 @@ client?.on('message', (topic, payload) => {
     return
   }
 
+  const jsonString= payload.toString('utf8').trim()
+  if( !jsonString ) {
+    return
+  }
+
   try {
-    stream.send( JSON.parse( payload.toString('utf8') ) )
+    stream.send( JSON.parse( jsonString ) )
   } catch( e ) {
     console.error('Could not decode mqtt message', e)
   }
