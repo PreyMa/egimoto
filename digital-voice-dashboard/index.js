@@ -19,6 +19,7 @@ async function mqttConnect() {
       password: process.env.MQTT_PASSWORD
     });
 
+    console.log('[MQTT] Connected to server')
     await client.subscribeAsync(process.env.MQTT_TOPIC)
     return client
 
@@ -59,5 +60,5 @@ client?.on('message', (topic, payload) => {
 
 const port= parseInt(process.env.PORT)
 app.listen(port, () => {
-  console.log(`HTTP: Server listening on ${port}`)
+  console.log(`[HTTP] Server listening on ${port}`)
 })
