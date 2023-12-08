@@ -50,6 +50,19 @@ document.querySelectorAll('input[type="radio"][name="lang"]').forEach( button =>
   update()
 })
 
+// Setup fade-out timer enable/disable button
+document.getElementById('keep-entries-checkbox').checked= localStorage.getItem('keepEntries') !== 'false'
+document.getElementById('keep-entries-checkbox').addEventListener('change', e => {
+  const keepEntries= e.target.checked
+  localStorage.setItem('keepEntries', keepEntries)
+
+  if( keepEntries ) {
+    Talker.forEach(table, talker => talker.clearFadeoutTimer())
+  } else {
+    Talker.forEach(table, talker => talker.setFadeoutTimer())
+  }
+})
+
 class Talker {
   constructor( config ) {
     this.startTime= -1
@@ -202,17 +215,4 @@ stream.addEventListener('message', event => {
 stream.addEventListener('error', event => {
   console.error('SSE error:', event)
   showErrorModal('Lost connection to the server. Try reloading the page')
-})
-
-// Setup fade-out timer enable/disable button
-document.getElementById('keep-entries-checkbox').checked= localStorage.getItem('keepEntries') !== 'false'
-document.getElementById('keep-entries-checkbox').addEventListener('change', e => {
-  const keepEntries= e.target.checked
-  localStorage.setItem('keepEntries', keepEntries)
-
-  if( keepEntries ) {
-    Talker.forEach(table, talker => talker.clearFadeoutTimer())
-  } else {
-    Talker.forEach(table, talker => talker.setFadeoutTimer())
-  }
 })
