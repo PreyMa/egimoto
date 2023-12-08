@@ -7,6 +7,18 @@ function showErrorModal( message ) {
   document.getElementById('error-modal').showModal()
 }
 
+function formatTime( date ) {
+  if( !(date instanceof Date) || Number.isNaN(date) ) {
+    return ''
+  }
+
+  const hours= `${date.getHours()}`.padStart(2, '0')
+  const minutes= `${date.getMinutes()}`.padStart(2, '0')
+  const seconds= `${date.getSeconds()}`.padStart(2, '0')
+
+  return `${hours}:${minutes}:${seconds}`
+}
+
 let lang= null
 
 // Try to reload the language setting from local storage
@@ -59,12 +71,13 @@ class Talker {
     this.tableRow.appendChild( document.createElement('td') )
     this.tableRow.appendChild( document.createElement('td') )
     this.tableRow.appendChild( document.createElement('td') )
+    this.tableRow.appendChild( document.createElement('td') )
 
     this.updateFromPacket( config )
   }
 
   updateFromPacket( config ) {
-    const {action, external, typ, type, from, to}= config
+    const {action, external, typ, type, from, to, time}= config
 
     this.activeElem.classList.toggle('active', action === 'start')
     this.activeElem.classList.toggle('inactive', action === 'end')
@@ -80,6 +93,7 @@ class Talker {
       if( this.startTime < 0 ) {
         this.startTime= Date.now()
         this.clockElem.innerText= '0min 0s'
+        this.timestampElem.innerText= formatTime( new Date(time) )
       }
 
       this.clearFadeoutTimer()
@@ -161,6 +175,7 @@ class Talker {
   get modeElem() { return this.tableRow.cells[2] }
   get callerElem() { return this.tableRow.cells[3] }
   get clockElem() { return this.tableRow.cells[4] }
+  get timestampElem() { return this.tableRow.cells[5] }
 }
 
 // Get the main table and setup the clock update timer (update every 500ms)
