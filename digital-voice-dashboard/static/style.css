@@ -1,0 +1,298 @@
+
+:root {
+  --color-accent: #00bef3;
+  --content-padding: 2rem;
+  --color-table: #ececec;
+  --border-radius-table: 1rem;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  height: 4rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+
+  /* Language selector */
+  & .lang {
+    display: flex;
+    
+    /* Add a border with some spacing to the buttons/labels */
+    > div {
+      display: flex;
+      flex-direction: row;
+      padding: 3px;
+      --border: 1px solid lightgrey;
+      border: var(--border);
+      border-radius: 5px;
+    }
+
+    /* Add rounded corners at the left and right most button/label
+       and separate each with a border on the right */
+    & label {
+      display: block;
+      padding: 0.5rem;
+      border-right: var(--border);
+      width: 3.5rem;
+      text-align: center;
+      user-select: none;
+      transition: background-color 0.2s ease;
+
+     &:hover {
+      cursor: pointer;
+     }
+
+     &:first-of-type {
+      border-top-left-radius: 5px;
+      border-bottom-left-radius: 5px;
+     }
+
+     &:last-of-type {
+      border-top-right-radius: 5px;
+      border-bottom-right-radius: 5px;
+      border: none;
+     }
+    }
+
+    /* Hide the actual radio buttons, but color the selected neighboring button/label */
+    & input {
+      display: none;
+
+      &:checked + label {
+        background-color: var(--color-accent);
+        color: white;
+      }
+    }
+  }
+}
+
+main {
+  padding-left: var(--content-padding);
+  padding-right: var(--content-padding);
+  margin-top: 2rem;
+  min-height: 90vh;
+
+  & table {
+    width: 100%;
+    border-spacing: 0;
+
+    & th {
+      padding: 1rem;
+    }
+
+    & tbody tr {
+      /* Add rounded corners to the top */
+      &:first-child {
+        & td {
+          padding-top: 1.2rem;
+        }
+
+        & td:first-child {
+          border-top-left-radius: var(--border-radius-table);
+        }
+
+        & td:last-child {
+          border-top-right-radius: var(--border-radius-table);
+        }
+      }
+
+      /* Add rounded corners to the bottom */
+      &:nth-last-child(2), &.placeholder {
+        & td {
+          padding-bottom: 1.2rem;
+        }
+
+        & td:first-child {
+          border-bottom-left-radius: var(--border-radius-table);
+        }
+
+        & td:last-child {
+          border-bottom-right-radius: var(--border-radius-table);
+        }
+      }
+
+      
+      /* Add separating lines between the rows */
+      &:not(:nth-last-child(2)):not(.placeholder) {
+        & td::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          bottom: 0;
+          height: 1px;
+          width: 100%;
+          border-bottom: 1px solid grey;
+        }
+
+        /* Let the lines start and end with some spacing */
+        & td:first-child::after {
+          left: 2rem;
+          width: calc(100% - 2rem);
+        }
+
+        & td:last-child::after {
+          width: calc(100% - 2rem);
+        }
+      }
+    }
+
+    & td {
+      padding: 0.7rem 0;
+      background-color: var(--color-table);
+      text-align: center;
+      position: relative;
+    }
+
+    /* Transmission indicator circle */
+    & td:is(.active, .inactive) > span {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      background-color: rgb(153, 228, 41);
+      border-radius: 500px;
+      border: 2px solid rgb(94 218 36);
+    }
+
+    & td.inactive > span {
+      background-color: rgb(214 214 214);
+      border: 2px solid rgb(189 189 189);
+    }
+
+    /* Connection type icons */
+    & td.connection img {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-right: 0.3rem;
+    }
+
+    & tr.placeholder {
+      display: none;
+
+      &:only-child {
+        display: table-row;
+      }
+    }
+  }
+}
+
+footer {
+  height: 10rem;
+  padding: 2rem;
+  padding-right: 4rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 4rem;
+
+  & section {
+    display: flex;
+    flex-direction: column;
+  }
+
+  & ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  & li {
+    margin-bottom: 0.8rem;
+  }
+
+  & a {
+    text-decoration: none;
+
+    &:hover, &:focus {
+      text-decoration: underline;
+    }
+
+    /* Do not underline the emojis */
+    & > span {
+      display: inline-block;
+      text-decoration: none !important;
+    }
+  }
+
+  & section.description {
+    font-style: italic;
+    justify-content: space-evenly;
+    margin-right: auto;
+  }
+}
+
+@keyframes fall-in {
+  0% {
+    opacity: 0.3;
+    transform: translateY(-1rem);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#error-modal {
+  margin-top: 0;
+  border: none;
+  outline: none;
+  border-bottom-left-radius: var(--border-radius-table);
+  border-bottom-right-radius: var(--border-radius-table);
+  min-width: 12rem;
+  max-width: min(100% - 4rem, 32rem);
+  box-sizing: border-box;
+  padding: 1rem 2rem;
+  box-shadow: 2px 2px 8px 1px #00000030;
+
+  position: relative;
+  flex-direction: row;
+  align-items: center;
+  gap: 1.5rem;
+
+  &::backdrop {
+    background: #c3d7d930;
+  }
+
+  &[open] {
+    display: flex;
+    animation: fall-in 0.3s ease-out;
+  }
+
+  & > img {
+    width: 4rem;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  /* Close button placed in the top right corner */
+  & > form {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+
+    & button {
+      background: none;
+      outline: none;
+      border: none;
+      
+      & img {
+        width: 1rem;
+        aspect-ratio: 1;
+        object-fit: cover;
+      }
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}
