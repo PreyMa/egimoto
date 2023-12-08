@@ -16,40 +16,67 @@ header {
   height: 4rem;
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   gap: 1rem;
   padding-left: var(--content-padding);
   padding-right: var(--content-padding);
 
+  /* Logo */
+  & .logo {
+    margin-right: auto;
+  }
+
+& .keep-entries, & .lang {
+  /* Add a border with some spacing to the buttons/labels */
+  > div {
+    display: flex;
+    flex-direction: row;
+    padding: 3px;
+    --border: 1px solid lightgrey;
+    border: var(--border);
+    border-radius: 7px;
+  }
+
+  /* Hide the actual inputs, but color the selected neighboring button/label */
+  & input {
+    display: none;
+
+    &:checked + label {
+      background-color: var(--color-accent);
+      color: white;
+    }
+  }
+
+  &:hover, & *:hover{
+    cursor: pointer;
+  }
+  
+  & label {
+    display: block;
+    padding: 0.5rem;
+    text-align: center;
+    user-select: none;
+    transition: background-color 0.2s ease;
+  }
+}
+
+  /* Keep entries button */
+  & .keep-entries {
+    & label {
+      border-radius: 5px;
+    }
+  }
+
   /* Language selector */
   & .lang {
     display: flex;
-    
-    /* Add a border with some spacing to the buttons/labels */
-    > div {
-      display: flex;
-      flex-direction: row;
-      padding: 3px;
-      --border: 1px solid lightgrey;
-      border: var(--border);
-      border-radius: 5px;
-    }
 
     /* Add rounded corners at the left and right most button/label
        and separate each with a border on the right */
     & label {
-      display: block;
-      padding: 0.5rem;
       border-right: var(--border);
       width: 3.5rem;
-      text-align: center;
-      user-select: none;
-      transition: background-color 0.2s ease;
-
-     &:hover {
-      cursor: pointer;
-     }
 
      &:first-of-type {
       border-top-left-radius: 5px;
@@ -61,16 +88,6 @@ header {
       border-bottom-right-radius: 5px;
       border: none;
      }
-    }
-
-    /* Hide the actual radio buttons, but color the selected neighboring button/label */
-    & input {
-      display: none;
-
-      &:checked + label {
-        background-color: var(--color-accent);
-        color: white;
-      }
     }
   }
 }

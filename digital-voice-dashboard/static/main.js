@@ -82,18 +82,27 @@ class Talker {
         this.clockElem.innerText= '0min 0s'
       }
 
-      if( this.fadeOutTimer ) {
-        window.clearTimeout( this.fadeOutTimer )
-        this.fadeOutTimer= null
-      }
+      this.clearFadeoutTimer()
 
     } else if( action === 'end' ) {
       this.startTime= -1
       this.clockElem.innerText= '—'
 
-      if( !this.fadeOutTimer ) {
-        this.fadeOutTimer= window.setTimeout( () => this.detach(), 2* 60* 1000)
-      }
+      this.setFadeoutTimer()
+    }
+  }
+
+  setFadeoutTimer() {
+    const keepEntries= document.getElementById('keep-entries-checkbox').checked
+    if( !this.fadeOutTimer && !keepEntries ) {
+      this.fadeOutTimer= window.setTimeout( () => this.detach(), 10* 60* 1000)
+    }
+  }
+
+  clearFadeoutTimer() {
+    if( this.fadeOutTimer && (this.startTime < 0) ) {
+      window.clearTimeout( this.fadeOutTimer )
+      this.fadeOutTimer= null
     }
   }
 
@@ -180,4 +189,15 @@ stream.addEventListener('error', event => {
   showErrorModal('Lost connection to the server. Try reloading the page')
 })
 
+// Setup fade-out timer enable/disable button
+document.getElementById('keep-entries-checkbox').checked= localStorage.getItem('keepEntries') !== 'false'
+document.getElementById('keep-entries-checkbox').addEventListener('change', e => {
+  const keepEntries= e.target.checked
+  localStorage.setItem('keepEntries', keepEntries)
 
+  if( keepEntries ) {
+    Talker.forEach(table, talker => talker.clearFadeoutTimer())
+  } else {
+    Talker.forEach(table, talker => talker.setFadeoutTimer())
+  }
+})

@@ -10,7 +10,8 @@ export default {
     "inactive": "inaktiv",
     "network call": "Netzwerk-Anruf",
     "radio call": "Funkspruch",
-    "empty table": "Noch keine Verbindungen anzuzeigen"
+    "empty table": "Noch keine Verbindungen anzuzeigen",
+    "keep entries": "Einträge behalten"
   },
   "en": {
     "Active": "Active",
@@ -23,6 +24,7 @@ export default {
     "inactive": "inactive",
     "network call": "Network call",
     "radio call": "Radio call",
-    "empty table": "No connections to display yet"
+    "empty table": "No connections to display yet",
+    "keep entries": "Keep entries"
   }
 }
