@@ -116,6 +116,11 @@ class Talker {
       this.clockElem.innerText= '—'
 
       this.setFadeoutTimer()
+
+      // If we do not know the start time, just use the end time
+      if( !this.timestampElem.innerText ) {
+        this.timestampElem.innerText= formatTime( new Date(time) )
+      }
     }
   }
 
@@ -195,21 +200,41 @@ class Talker {
 const table= document.querySelector('main table')
 setInterval(() => Talker.forEach(table, talker => talker.updateClock()), 500)
 
-// Connect to the server-sent-event source
-const stream= new EventSource('/stream')
-stream.addEventListener('message', event => {
-  const data= JSON.parse( event.data )
-
+function consumePacket( packet ) {
   // Try to find a row with the same caller id
-  const existingTalker= Talker.findByCallerId( table, data.from )
+  const existingTalker= Talker.findByCallerId( table, packet.from )
   if( existingTalker ) {
-    existingTalker.updateFromPacket( data )
+    existingTalker.updateFromPacket( packet )
     return
   }
 
   // Create a new table row
-  const newTalker= new Talker( data )
+  const newTalker= new Talker( packet )
   newTalker.attach( table )
+}
+
+// Try to load the history from the server and display it
+try {
+  const historyResp= await fetch('/history')
+  if( !historyResp.ok ) {
+    throw Error(`Server status was: ${historyResp.status}`)
+  }
+
+  const history= await historyResp.json()
+  if( !Array.isArray(history) ) {
+    throw Error('Not an array')
+  }
+
+  history.forEach( consumePacket )
+
+} catch( e ) {
+  console.error('Could not load history:', e)
+}
+
+// Connect to the server-sent-event source
+const stream= new EventSource('/stream')
+stream.addEventListener('message', event => {
+  consumePacket( JSON.parse( event.data ) )
 })
 
 stream.addEventListener('error', event => {

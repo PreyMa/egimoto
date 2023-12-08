@@ -10,6 +10,8 @@ import path from 'node:path'
 dotenv.config()
 
 const currentDirectory= url.fileURLToPath( new URL('.', import.meta.url) )
+const maxPacketHistoryLength= parseInt(process.env.MAX_PACKET_HISTORY_LENGTH)
+const packetHistory= []
 
 async function mqttConnect() {
   try {
@@ -45,6 +47,7 @@ app.use(express.static(path.join(currentDirectory, '/static'), { index: ['index.
 
 const stream= new SSE()
 app.get('/stream', stream.init)
+app.get('/history', (req, resp) => resp.send(packetHistory) )
 
 client?.on('message', (topic, payload) => {
   if( topic !== process.env.MQTT_TOPIC ) {
@@ -57,7 +60,17 @@ client?.on('message', (topic, payload) => {
   }
 
   try {
-    stream.send( JSON.parse( jsonString ) )
+    const packet= {
+      ...JSON.parse( jsonString ),
+      time: new Date().toISOString()
+    }
+    stream.send( packet )
+
+    packetHistory.push( packet )
+    while( packetHistory.length > maxPacketHistoryLength ) {
+      packetHistory.shift()
+    }
+
   } catch( e ) {
     console.error('Could not decode mqtt message', e)
   }
