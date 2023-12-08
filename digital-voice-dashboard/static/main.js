@@ -54,7 +54,7 @@ class Talker {
     connectionElem.classList.add('connection')
     connectionElem.appendChild( document.createElement('img') ).src= ''
     connectionElem.appendChild( document.createElement('img') ).src= '/arrow.svg'
-    connectionElem.appendChild( document.createElement('img') ).src= '/radio.svg'
+    connectionElem.appendChild( document.createElement('img') ).src= '/online.svg'
 
     this.tableRow.appendChild( document.createElement('td') )
     this.tableRow.appendChild( document.createElement('td') )
@@ -71,7 +71,7 @@ class Talker {
     this.activeElem.title= action === 'start' ? lang['active'] : lang['inactive']
 
     this.connectionElem.title= external ? lang['network call'] : lang['radio call']
-    this.connectionElem.firstElementChild.src= external ? '/laptop.svg' : '/radio.svg'
+    this.connectionElem.firstElementChild.src= external ? '/address.svg' : '/radio.svg'
 
     this.modeElem.innerText= type || typ
     this.callerElem.innerText= `${from} → ${to}`
