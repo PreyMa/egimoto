@@ -4,8 +4,12 @@ import SSE from 'express-sse'
 import compression from 'compression'
 import dotenv from 'dotenv'
 import mqtt from 'mqtt'
+import url from 'node:url'
+import path from 'node:path'
 
 dotenv.config()
+
+const currentDirectory= url.fileURLToPath( new URL('.', import.meta.url) )
 
 async function mqttConnect() {
   try {
@@ -36,7 +40,7 @@ const app = express()
 
 app.use(helmet())
 app.use(compression())
-app.use(express.static('./static', { index: ['index.html'] }))
+app.use(express.static(path.join(currentDirectory, '/static'), { index: ['index.html'] }))
 
 const stream= new SSE()
 app.get('/stream', stream.init)
