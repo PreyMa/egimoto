@@ -1,7 +1,5 @@
 import langs from './lang.js'
 
-function ifTruthy( value, fn ) { value ? fn(value) : null }
-
 function showErrorModal( message ) {
   document.getElementById('error-message').innerText= message
   document.getElementById('error-modal').showModal()
@@ -19,13 +17,22 @@ function formatTime( date ) {
   return `${hours}:${minutes}:${seconds}`
 }
 
-let lang= null
+document.querySelectorAll('input[data-stored').forEach( input => {
+  const storedValue= localStorage.getItem(input.name)
+  if( input.type === 'radio' ) {
+    if( storedValue !== null ) {
+      input.checked= storedValue === input.value
+    }
+    input.addEventListener('change', e => localStorage.setItem(input.name, input.value))
+  } else {
+    if( storedValue !== null ) {
+      input.checked= storedValue !== 'false'
+    }
+    input.addEventListener('change', e => localStorage.setItem(input.name, input.checked))
+  }
+})
 
-// Try to reload the language setting from local storage
-ifTruthy(
-  document.querySelector(`input[type="radio"][name="lang"][value="${localStorage.getItem('lang')}"]`),
-  button => button.checked= true
-)
+let lang= null
 
 // Setup language selector
 document.querySelectorAll('input[type="radio"][name="lang"]').forEach( button => {
@@ -51,11 +58,8 @@ document.querySelectorAll('input[type="radio"][name="lang"]').forEach( button =>
 })
 
 // Setup fade-out timer enable/disable button
-document.getElementById('keep-entries-checkbox').checked= localStorage.getItem('keepEntries') !== 'false'
 document.getElementById('keep-entries-checkbox').addEventListener('change', e => {
   const keepEntries= e.target.checked
-  localStorage.setItem('keepEntries', keepEntries)
-
   if( keepEntries ) {
     Talker.forEach(table, talker => talker.clearFadeoutTimer())
   } else {
