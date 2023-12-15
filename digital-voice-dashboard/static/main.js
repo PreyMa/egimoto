@@ -67,6 +67,64 @@ document.getElementById('keep-entries-checkbox').addEventListener('change', e =>
   }
 })
 
+// Try to load the history from the server. Return an empty history on error
+async function loadHistory() {
+  try {
+    const historyResp= await fetch('/history')
+    if( !historyResp.ok ) {
+      throw Error(`Server status was: ${historyResp.status}`)
+    }
+
+    const history= await historyResp.json()
+    if( !Array.isArray(history) ) {
+      throw Error('Not an array')
+    }
+
+    return history
+
+  } catch( e ) {
+    console.error('Could not load history:', e)
+    return []
+  }
+}
+
+class HistoryStream {
+  constructor( url, history= [] ) {
+    this._stream= new EventSource( url )
+    this._history= history
+    this.onPacket= null
+
+    this._stream.addEventListener('message', event => this._handlePacket(event))
+    this._stream.addEventListener('error', event => this._handleError(event))
+  }
+
+  _handlePacket( event ) {
+    try {
+      const packet= JSON.parse( event.data )
+      this._history.push( packet )
+      while( this._history.length > 10000 ) {
+        this._history.shift()
+      }
+
+      if( this.onPacket ) {
+        this.onPacket( packet )
+      }
+      
+    } catch( e ) {
+      console.error('Could not handle incoming packet:', e)
+    }
+  }
+
+  _handleError( event ) {
+    console.error('SSE error:', event)
+    showErrorModal('Lost connection to the server. Try reloading the page')
+  }
+
+  forEach( func ) {
+    this._history.forEach( func )
+  }
+}
+
 class Talker {
   constructor( config ) {
     this.startTime= -1
@@ -94,7 +152,7 @@ class Talker {
   }
 
   updateFromPacket( config ) {
-    const {action, external, typ, type, from, to, time}= config
+    const {action, external, typ, type, from, to, time: isoTime}= config
 
     this.activeElem.classList.toggle('active', action === 'start')
     this.activeElem.classList.toggle('inactive', action === 'end')
@@ -106,24 +164,33 @@ class Talker {
     this.modeElem.innerText= type || typ
     this.callerElem.innerText= `${from} → ${to}`
 
+    const time= new Date( isoTime )
+
     if( action === 'start' ) {
       if( this.startTime < 0 ) {
-        this.startTime= Date.now()
+        this.startTime= time.getTime()
         this.clockElem.innerText= '0min 0s'
-        this.timestampElem.innerText= formatTime( new Date(time) )
+        this.timestampElem.innerText= formatTime( time )
+        this.timestampElem.title= time.toISOString()
       }
 
       this.clearFadeoutTimer()
 
     } else if( action === 'end' ) {
-      this.startTime= -1
-      this.clockElem.innerText= '—'
+      // Keep the clock value in chronological view
+      if( document.getElementById('chronological-checkbox').checked ) {
+        this._updateClockToReference( time.getTime() )
+      } else {
+        this.clockElem.innerText= '—'
+      }
 
+      this.startTime= -1
       this.setFadeoutTimer()
 
       // If we do not know the start time, just use the end time
       if( !this.timestampElem.innerText ) {
-        this.timestampElem.innerText= formatTime( new Date(time) )
+        this.timestampElem.innerText= formatTime( time )
+        this.timestampElem.title= time.toISOString()
       }
     }
   }
@@ -143,18 +210,22 @@ class Talker {
   }
 
   updateClock() {
+    this._updateClockToReference( Date.now() )
+  }
+
+  _updateClockToReference( endTime ) {
     if( this.startTime < 0 ) {
       return
     }
 
-    const time= Math.round( (Date.now()- this.startTime) / 1000 )
+    const time= Math.round( (endTime- this.startTime) / 1000 )
     const secs= Math.floor( time % 60 )
     const mins= Math.floor( time / 60 )
     this.clockElem.innerText= `${mins}min ${secs}s`
   }
 
   attach( table ) {
-    table.tBodies[0].prepend( this.tableRow )
+    table.prepend( this.tableRow )
   }
 
   async detach() {
@@ -169,7 +240,7 @@ class Talker {
   static Break= {}
 
   static forEach( table, fn ) {
-    const rows= table.tBodies[0].rows
+    const rows= table.rows
     for( let i= 0; i!== rows.length; i++ ) {
       const talker= rows[i]._talkerInstance
       if( talker instanceof Talker ) {
@@ -201,15 +272,25 @@ class Talker {
 }
 
 // Get the main table and setup the clock update timer (update every 500ms)
-const table= document.querySelector('main table')
+const table= document.querySelector('main table').tBodies[0]
 setInterval(() => Talker.forEach(table, talker => talker.updateClock()), 500)
 
+function clearTable() {
+  // Delete all rows except the very last one (this is the table empty message)
+  while( table.rows.length > 1 ) {
+    table.deleteRow( 0 )
+  }
+}
+
 function consumePacket( packet ) {
-  // Try to find a row with the same caller id
-  const existingTalker= Talker.findByCallerId( table, packet.from )
-  if( existingTalker ) {
-    existingTalker.updateFromPacket( packet )
-    return
+  const chronologicalView= document.getElementById('chronological-checkbox').checked
+  if( !chronologicalView || packet.action === 'end' ) {
+    // Try to find a row with the same caller id
+    const existingTalker= Talker.findByCallerId( table, packet.from )
+    if( existingTalker ) {
+      existingTalker.updateFromPacket( packet )
+      return
+    }
   }
 
   // Create a new table row
@@ -217,31 +298,15 @@ function consumePacket( packet ) {
   newTalker.attach( table )
 }
 
-// Try to load the history from the server and display it
-try {
-  const historyResp= await fetch('/history')
-  if( !historyResp.ok ) {
-    throw Error(`Server status was: ${historyResp.status}`)
-  }
-
-  const history= await historyResp.json()
-  if( !Array.isArray(history) ) {
-    throw Error('Not an array')
-  }
-
-  history.forEach( consumePacket )
-
-} catch( e ) {
-  console.error('Could not load history:', e)
-}
-
 // Connect to the server-sent-event source
-const stream= new EventSource('/stream')
-stream.addEventListener('message', event => {
-  consumePacket( JSON.parse( event.data ) )
-})
+const history= await loadHistory()
+const stream= new HistoryStream('/stream', history)
 
-stream.addEventListener('error', event => {
-  console.error('SSE error:', event)
-  showErrorModal('Lost connection to the server. Try reloading the page')
+stream.forEach( consumePacket )
+stream.onPacket= consumePacket
+
+// Setup chronological/grouped view toggle button
+document.getElementById('chronological-checkbox').addEventListener('change', e => {
+  clearTable()
+  stream.forEach( consumePacket )
 })

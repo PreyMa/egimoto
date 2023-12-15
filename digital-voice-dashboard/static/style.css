@@ -27,7 +27,7 @@ header {
     margin-right: auto;
   }
 
-& .keep-entries, & .lang {
+& .toggle-button, & .lang {
   /* Add a border with some spacing to the buttons/labels */
   > div {
     display: flex;
@@ -62,7 +62,7 @@ header {
 }
 
   /* Keep entries button */
-  & .keep-entries {
+  & .toggle-button {
     & label {
       border-radius: 5px;
     }

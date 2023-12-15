@@ -12,7 +12,8 @@ export default {
     "rf call": "HF-Eingabe",
     "empty table": "Noch keine aufgezeichneten Gespräche",
     "timestamp": "Zeitstempel",
-    "keep entries": "Einträge behalten"
+    "keep entries": "Einträge behalten",
+    "chronological": "Chronologisch"
   },
   "en": {
     "Active": "Active",
@@ -27,7 +28,8 @@ export default {
     "rf call": "RF call",
     "empty table": "No connections to display yet",
     "timestamp": "Timestamp",
-    "keep entries": "Keep entries"
+    "keep entries": "Keep entries",
+    "chronological": "Chronological"
   },
   "cz": {
     "Active": "Aktivní",
@@ -42,6 +44,7 @@ export default {
     "rf call": "Vysokofrekvenční volání",
     "empty table": "Zatím žádné nahrané hovory",
     "timestamp": "Časové razítko",
-    "keep entries": "Uchovávejte záznamy"
+    "keep entries": "Uchovávejte záznamy",
+    "chronological": "Chronologický"
   }
 }
