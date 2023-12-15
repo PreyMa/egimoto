@@ -1,5 +1,8 @@
 import langs from './lang.js'
 
+const chronologicalCheckbox= document.getElementById('chronological-checkbox')
+const keepEntriesCheckbox= document.getElementById('keep-entries-checkbox')
+
 function showErrorModal( message ) {
   document.getElementById('error-message').innerText= message
   document.getElementById('error-modal').showModal()
@@ -58,9 +61,8 @@ document.querySelectorAll('input[type="radio"][name="lang"]').forEach( button =>
 })
 
 // Setup fade-out timer enable/disable button
-document.getElementById('keep-entries-checkbox').addEventListener('change', e => {
-  const keepEntries= e.target.checked
-  if( keepEntries ) {
+keepEntriesCheckbox.addEventListener('change', e => {
+  if( keepEntriesCheckbox.checked ) {
     Talker.forEach(table, talker => talker.clearFadeoutTimer())
   } else {
     Talker.forEach(table, talker => talker.setFadeoutTimer())
@@ -178,7 +180,7 @@ class Talker {
 
     } else if( action === 'end' ) {
       // Keep the clock value in chronological view
-      if( document.getElementById('chronological-checkbox').checked ) {
+      if( chronologicalCheckbox.checked ) {
         this._updateClockToReference( time.getTime() )
       } else {
         this.clockElem.innerText= '—'
@@ -196,8 +198,7 @@ class Talker {
   }
 
   setFadeoutTimer() {
-    const keepEntries= document.getElementById('keep-entries-checkbox').checked
-    if( !this.fadeOutTimer && !keepEntries ) {
+    if( !this.fadeOutTimer && !keepEntriesCheckbox.checked ) {
       this.fadeOutTimer= window.setTimeout( () => this.detach(), 10* 60* 1000)
     }
   }
@@ -283,8 +284,8 @@ function clearTable() {
 }
 
 function consumePacket( packet ) {
-  const chronologicalView= document.getElementById('chronological-checkbox').checked
-  if( !chronologicalView || packet.action === 'end' ) {
+  // Always group end messages with start messages, or group everything in grouped mode (not chronological mode)
+  if( !chronologicalCheckbox.checked || packet.action === 'end' ) {
     // Try to find a row with the same caller id
     const existingTalker= Talker.findByCallerId( table, packet.from )
     if( existingTalker ) {
@@ -306,7 +307,7 @@ stream.forEach( consumePacket )
 stream.onPacket= consumePacket
 
 // Setup chronological/grouped view toggle button
-document.getElementById('chronological-checkbox').addEventListener('change', e => {
+chronologicalCheckbox.addEventListener('change', e => {
   clearTable()
   stream.forEach( consumePacket )
 })
