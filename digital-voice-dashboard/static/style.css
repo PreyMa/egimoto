@@ -205,6 +205,7 @@ footer {
   height: 10rem;
   padding: 2rem;
   padding-right: 4rem;
+  padding-top: 6rem;
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
