@@ -133,6 +133,7 @@ if( window.location.pathname === '/' ) {
       this.startTime= -1
       this.fadeOutTimer= null
       this.callerId= config.from
+      this.mode= config.mode
       this.tableRow= document.createElement('tr')
       this.tableRow._talkerInstance= this
       
@@ -156,6 +157,9 @@ if( window.location.pathname === '/' ) {
 
     updateFromPacket( config ) {
       const {action, external, typ, type, from, fromName, to, toName, time: isoTime}= config
+
+      this.callerId= from
+      this.mode= type || typ
 
       this.activeElem.classList.toggle('active', action === 'start')
       this.activeElem.classList.toggle('inactive', action === 'end')
@@ -254,16 +258,24 @@ if( window.location.pathname === '/' ) {
       }
     }
 
-    static findByCallerId( table, id ) {
+    static findFirst( table, fn ) {
       let talker= null
       Talker.forEach( table, t => {
-        if( t.callerId === id ) {
+        if( fn( t ) ) {
           talker= t
           return Talker.Break
         }
       })
 
       return talker
+    }
+
+    static findByCallerId( table, id ) {
+      return this.findFirst( table, t => t.callerId === id )
+    }
+
+    static findByCallerIdAndMode( table, id, mode ) {
+      return this.findFirst( table, t => t.callerId === id && t.mode === mode )
     }
 
     get activeElem() { return this.tableRow.cells[0] }
@@ -286,10 +298,17 @@ if( window.location.pathname === '/' ) {
   }
 
   function consumePacket( packet ) {
-    // Always group end messages with start messages, or group everything in grouped mode (not chronological mode)
-    if( !chronologicalCheckbox.checked || packet.action === 'end' ) {
+    // Group everything in grouped mode by user id
+    if( !chronologicalCheckbox.checked ) {
       // Try to find a row with the same caller id
       const existingTalker= Talker.findByCallerId( table, packet.from )
+      if( existingTalker ) {
+        existingTalker.updateFromPacket( packet )
+        return
+      }
+    // Only group end packets with start packets in chronological view by user id and mode
+    } else if( packet.action === 'end' ) {
+      const existingTalker= Talker.findByCallerIdAndMode( table, packet.from, packet.type || packet.typ )
       if( existingTalker ) {
         existingTalker.updateFromPacket( packet )
         return
