@@ -33,7 +33,9 @@ app.use(express.static(path.join(currentDirectory, '/static')))
 // Setup view routes
 app.get('/', (req, res) => res.render('home'))
 app.get('/about/en', (req, res) => res.render('about_en'))
+app.get('/about/de', (req, res) => res.render('about_de'))
 app.get('/faq/en', (req, res) => res.render('faq_en'))
+app.get('/faq/de', (req, res) => res.render('faq_de'))
 
 const stream= new SSE()
 app.get('/stream', stream.init)
