@@ -1,6 +1,6 @@
 {
   "name": "digital-voice-dashboard",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A dashboard for viewing digital voice radio activity on a public MMDVMHost repeater",
   "main": "index.js",
   "type": "module",
