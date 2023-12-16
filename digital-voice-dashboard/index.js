@@ -8,6 +8,7 @@ import path from 'node:path'
 import { engine } from 'express-handlebars'
 import { mqttConnect } from './mqtt.js'
 import { readCallerIdNames } from './callerIdNames.js'
+import { readVersionNumber } from './version.js'
 
 dotenv.config()
 
@@ -30,7 +31,7 @@ function packetsHaveSameCall( a, b ) {
 }
 
 // Read the caller id names CSV and connect to mqtt in parallel
-const [callerIdNames, client]= await Promise.all([ readCallerIdNames(), mqttConnect() ])
+const [callerIdNames, client, versionNumber]= await Promise.all([ readCallerIdNames(), mqttConnect(), readVersionNumber(currentDirectory) ])
 
 const app = express()
 
@@ -38,6 +39,8 @@ const app = express()
 app.engine('hbs', engine({defaultLayout: 'main', extname: '.hbs'}))
 app.set('view engine', 'hbs')
 app.set('views', path.join(currentDirectory, '/views'))
+
+app.locals.version= versionNumber
 
 // Add middleware functions
 app.use(helmet())
