@@ -43,26 +43,28 @@ header {
     border-radius: 7px;
   }
 
-  /* Hide the actual inputs, but color the selected neighboring button/label */
-  & input {
-    display: none;
-
-    &:checked + label {
-      background-color: var(--color-accent);
-      color: white;
-    }
-  }
-
-  &:hover, & *:hover{
+  &:hover, & *:hover {
     cursor: pointer;
   }
 
-  & label {
+  & label, & a, & a:visited {
+    color: black;
     display: block;
     padding: 0.5rem;
     text-align: center;
     user-select: none;
     transition: background-color 0.2s ease;
+    text-decoration: none;
+  }
+
+  /* Hide the actual inputs, but color the selected neighboring button/label */
+  & input {
+    display: none;
+  }
+
+  & input:checked + label, & a.selected {
+    background-color: var(--color-accent);
+    color: white;
   }
 }
 
@@ -79,7 +81,7 @@ header {
 
     /* Add rounded corners at the left and right most button/label
        and separate each with a border on the right */
-    & label {
+    & label, & a {
       border-right: var(--border);
       width: 3.5rem;
 
@@ -203,6 +205,99 @@ main {
         display: table-row;
       }
     }
+  }
+
+  &.article {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 45rem) 1fr;
+    gap: 6rem;
+
+    & section {
+      grid-column: 2;
+    }
+  }
+
+  & aside {
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    min-width: 10rem;
+
+    & ul {
+      padding: 0;
+      margin: 0;
+      margin-top: 1rem;
+      position: sticky;
+      top: 4rem;
+      list-style-type: none;
+    }
+
+    & nav {
+      max-width: 100%;
+    }
+
+    & li {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+  }
+
+  & article {
+    & p {
+      font-size: 1.1rem;
+      line-height: 1.6rem;
+    }
+
+    & :is(h1,h2,h3,h4,h5) {
+      position: relative;
+
+      & > a {
+        display: block;
+        position: absolute;
+        padding: 0.5rem;
+        top: -0.5rem;
+        left: -1.5rem;
+        color: grey;
+        text-decoration: none;
+        visibility: hidden;
+        opacity: 0;
+        transform: translateX(0.5rem);
+        transition: 0.2s ease-in-out;
+
+        &:hover {
+          text-decoration: underline;
+          color: black;
+        }
+
+        &::after {
+          content: '#';
+          font-weight: bold;
+          cursor: pointer;
+        }
+      }
+
+      &:hover > a, & > a:hover {
+        visibility: visible;
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  main.article {
+    gap: 2rem;
+  }
+
+  main.article aside {
+    display: none;
   }
 }
 
