@@ -1,0 +1,60 @@
+<header>
+  <section class="logo">
+    <h1>Digital Voice Dashboard</h1>
+  </section>
+  <section class="toggle-button">
+    <div>
+      <input type="checkbox" name="chronologicalView" id="chronological-checkbox" checked data-stored>
+      <label for="chronological-checkbox" data-lang="chronological">Chronological</label>
+    </div>
+  </section>
+  <section class="toggle-button">
+    <div>
+      <input type="checkbox" name="keepEntries" id="keep-entries-checkbox" checked data-stored>
+      <label for="keep-entries-checkbox" data-lang="keep entries">Keep entries</label>
+    </div>
+  </section>
+  <section class="lang">
+    <div>
+      <input type="radio" name="lang" id="lang-de" value="de" checked data-stored>
+      <label for="lang-de">Deutsch</label>
+      <input type="radio" name="lang" id="lang-en" value="en" data-stored>
+      <label for="lang-en">English</label>
+      <input type="radio" name="lang" id="lang-czech" value="cz" data-stored>
+      <label for="lang-czech">Čeština</label>
+    </div>
+  </section>
+</header>
+<main>
+  <section>
+    <table>
+      <thead>
+        <tr>
+          <th data-lang="Active">
+            Active
+          </th>
+          <th data-lang="connection">
+            Connection
+          </th>
+          <th data-lang="mode">
+            Mode
+          </th>
+          <th data-lang="call">
+            Call
+          </th>
+          <th data-lang="duration">
+            Duration
+          </th>
+          <th data-lang="timestamp">
+            Timestamp
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="placeholder">
+          <td colspan="6" data-lang="empty table"></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>

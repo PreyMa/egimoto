@@ -5,6 +5,7 @@ import compression from 'compression'
 import dotenv from 'dotenv'
 import url from 'node:url'
 import path from 'node:path'
+import { engine } from 'express-handlebars'
 import { mqttConnect } from './mqtt.js'
 import { readCallerIdNames } from './callerIdNames.js'
 
@@ -19,9 +20,18 @@ const [callerIdNames, client]= await Promise.all([ readCallerIdNames(), mqttConn
 
 const app = express()
 
+// Setup handlebars views directory and file extension
+app.engine('hbs', engine({defaultLayout: 'main', extname: '.hbs'}))
+app.set('view engine', 'hbs')
+app.set('views', path.join(currentDirectory, '/views'))
+
+// Add middleware functions
 app.use(helmet())
 app.use(compression())
-app.use(express.static(path.join(currentDirectory, '/static'), { index: ['index.html'] }))
+app.use(express.static(path.join(currentDirectory, '/static')))
+
+// Setup view routes
+app.get('/', (req, res) => res.render('home'))
 
 const stream= new SSE()
 app.get('/stream', stream.init)
