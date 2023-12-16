@@ -15,6 +15,20 @@ const currentDirectory= url.fileURLToPath( new URL('.', import.meta.url) )
 const maxPacketHistoryLength= parseInt(process.env.MAX_PACKET_HISTORY_LENGTH)
 const packetHistory= []
 
+function transmitPacket( packet ) {
+  stream.send( packet )
+
+  // Add packet to the history and delete old ones if necessary
+  packetHistory.push( packet )
+  while( packetHistory.length > maxPacketHistoryLength ) {
+    packetHistory.shift()
+  }
+}
+
+function packetsHaveSameCall( a, b ) {
+  return a.to === b.to && a.from === b.from
+}
+
 // Read the caller id names CSV and connect to mqtt in parallel
 const [callerIdNames, client]= await Promise.all([ readCallerIdNames(), mqttConnect() ])
 
@@ -41,6 +55,7 @@ const stream= new SSE()
 app.get('/stream', stream.init)
 app.get('/history', (req, resp) => resp.send(packetHistory) )
 
+let lastStartPacket= null
 client?.on('message', (topic, payload) => {
   if( topic !== process.env.MQTT_TOPIC ) {
     return
@@ -54,6 +69,22 @@ client?.on('message', (topic, payload) => {
   try {
     // Parse the json into an object to add some additional fields
     const packet= JSON.parse( jsonString )
+    // Check if this is a start packet while another start packet was not yet ended
+    if( lastStartPacket && packet.action === 'start' && !packetsHaveSameCall(lastStartPacket, packet) ) {
+      const stopPacket= {...lastStartPacket}
+      stopPacket.time= new Date().toISOString()
+      stopPacket.action= 'end'
+      transmitPacket( stopPacket )
+      lastStartPacket= null
+
+      console.log('[Stream] Generated missing stop packet:', stopPacket)
+    }
+
+    // End the last start packet if an end packet for the same call comes in
+    if( lastStartPacket && packet.action === 'end' && packetsHaveSameCall(lastStartPacket, packet) ) {
+      lastStartPacket= null
+    }
+
     packet.time= new Date().toISOString()
     packet.fromName= callerIdNames.get( parseInt(packet.from) ) || ''
 
@@ -64,13 +95,12 @@ client?.on('message', (topic, payload) => {
       packet.toName= toFieldName ? `${callType} ${toFieldName}` : ''
     }
 
-    stream.send( packet )
-
-    // Add packet to the history and delete old ones if necessary
-    packetHistory.push( packet )
-    while( packetHistory.length > maxPacketHistoryLength ) {
-      packetHistory.shift()
+    // Remember the last start packet, as it might need to be closed manually later
+    if( packet.action === 'start' ) {
+      lastStartPacket= packet
     }
+
+    transmitPacket( packet )
 
   } catch( e ) {
     console.error('Could not decode mqtt message', e)
