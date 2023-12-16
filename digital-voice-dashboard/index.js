@@ -80,7 +80,7 @@ client?.on('message', (topic, payload) => {
       transmitPacket( stopPacket )
       lastStartPacket= null
 
-      console.log('[Stream] Generated missing stop packet:', stopPacket)
+      console.log(`[Stream] Generated missing stop packet: from ${stopPacket.from} -> to ${stopPacket.to}`)
     }
 
     // End the last start packet if an end packet for the same call comes in
