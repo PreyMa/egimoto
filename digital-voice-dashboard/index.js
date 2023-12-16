@@ -57,9 +57,12 @@ client?.on('message', (topic, payload) => {
     packet.time= new Date().toISOString()
     packet.fromName= callerIdNames.get( parseInt(packet.from) ) || ''
 
-    const toFieldParts= packet.to.split(' ')
-    const toFieldName= callerIdNames.get( parseInt(toFieldParts[1]) )
-    packet.toName= toFieldName ? `${toFieldParts[0]} ${toFieldName}` : ''
+    // Only translate private call (PC) caller ids to names
+    const [callType, toField]= packet.to.split(' ')
+    if( callType && callType.toUpperCase() === 'PC') {
+      const toFieldName= callerIdNames.get( parseInt(toField) )
+      packet.toName= toFieldName ? `${callType} ${toFieldName}` : ''
+    }
 
     stream.send( packet )
 
