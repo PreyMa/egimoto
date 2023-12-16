@@ -154,7 +154,7 @@ class Talker {
   }
 
   updateFromPacket( config ) {
-    const {action, external, typ, type, from, to, time: isoTime}= config
+    const {action, external, typ, type, from, fromName, to, toName, time: isoTime}= config
 
     this.activeElem.classList.toggle('active', action === 'start')
     this.activeElem.classList.toggle('inactive', action === 'end')
@@ -164,7 +164,8 @@ class Talker {
     this.connectionElem.firstElementChild.src= external ? '/address.svg' : '/radio.svg'
 
     this.modeElem.innerText= type || typ
-    this.callerElem.innerText= `${from} → ${to}`
+    this.callerElem.innerText= `${fromName || from} → ${toName || to}`
+    this.callerElem.title= `${from} → ${to}`
 
     const time= new Date( isoTime )
 
