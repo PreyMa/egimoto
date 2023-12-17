@@ -133,7 +133,7 @@ if( window.location.pathname === '/' ) {
       this.startTime= -1
       this.fadeOutTimer= null
       this.callerId= config.from
-      this.mode= config.type || config.typ
+      this.mode= config.type || config.typ || ''
       this.callerIdsLabel= ''
       this.callerNamesLabel= ''
       this.showsCallerNames= true
@@ -155,7 +155,9 @@ if( window.location.pathname === '/' ) {
 
       const callerElem= this.tableRow.appendChild( document.createElement('td') )
       callerElem.classList.add('caller')
-      callerElem.appendChild( document.createElement('img') ).addEventListener('click', () => this.displayCallerFieldNames( !this.showsCallerNames ) )
+      callerElem.appendChild( document.createElement('img') ).addEventListener('click', () => {
+        this.displayCallerFieldNames( this.mode.toLowerCase().indexOf('dmr') < 0 || !this.showsCallerNames )
+      })
       callerElem.appendChild( document.createElement('span') )
       
       const clockElem= this.tableRow.appendChild( document.createElement('td') )
@@ -170,7 +172,7 @@ if( window.location.pathname === '/' ) {
       const {action, external, typ, type, from, fromName, to, toName, time: isoTime}= config
 
       this.callerId= from
-      this.mode= type || typ
+      this.mode= type || typ || ''
 
       this.activeElem.classList.toggle('active', action === 'start')
       this.activeElem.classList.toggle('inactive', action === 'end')
@@ -179,7 +181,7 @@ if( window.location.pathname === '/' ) {
       this.connectionElem.title= external ? lang['network call'] : lang['rf call']
       this.connectionElem.firstElementChild.src= external ? '/address.svg' : '/radio.svg'
 
-      this.modeElem.innerText= type || typ
+      this.modeElem.innerText= this.mode
       this.callerNamesLabel= `${fromName || from} → ${toName || to}`
       this.callerIdsLabel= `${from} → ${to}`
       this.displayCallerFieldNames( this.showsCallerNames )
