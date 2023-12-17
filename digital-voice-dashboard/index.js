@@ -30,6 +30,52 @@ function packetsHaveSameCall( a, b ) {
   return a.to === b.to && a.from === b.from
 }
 
+/**
+ * The following setup prevents calls from going on indefinitely when there is a mismatch of start and
+ * end packets. This can happen (frequently) when the system receives a start packet, but no end packet.
+ * However, as DMR only allows one speaker at a time, we can safely assume that a call has ended when a  
+ * start packet for a different one comes in. 
+ * This is a bit more complicated by the fact, that the DMR system can broadcast the same speaker on
+ * different time slots concurrently. Therefore, instead of only remembering the currently open call, we
+ * store a list of all calls started with the same 'from' and 'to' fields. Whenever an end packet comes
+ * in that matches a packet in the list, we remove it from the list. In case a start packet arrives that
+ * does not match the list, we assume that we lost at least one end packet and generate the end packets
+ * ourselves on the fly and empty the list. The new start packet is then again added to the list.
+ */
+const openCalls= []
+function handleOpenCalls( packet ) {
+  if( packet.action === 'start' ) {
+    // Close any other open start packets if they do not have the same 'from' and 'to' fields
+    // The list therefore only contains packets with the same fields, so we can just compare with the first item
+    if( openCalls.length && packet.action === 'start' && !packetsHaveSameCall(openCalls[0], packet) ) {
+      openCalls.forEach( startPacket => {
+        const stopPacket= {...startPacket}
+        stopPacket.time= new Date().toISOString()
+        stopPacket.action= 'end'
+        transmitPacket( stopPacket )
+        
+        console.log(`[Stream] Generated missing stop packet: from ${stopPacket.from} -> to ${stopPacket.to}`)
+      })
+
+      openCalls.length= 0
+    }
+    
+    // Remember this start packet for manually closing later if necessary
+    openCalls.push( packet )
+  }
+
+  // Remove start packets from the open list if an incoming end packet matches the 'from', 'to' and 'typ(e)' fields
+  if( openCalls.length && packet.action === 'end' && packetsHaveSameCall(openCalls[0], packet) ) {
+    for( let i= 0; i < openCalls.length; i++ ) {
+      const startPacket= openCalls[i]
+      if( (startPacket.typ || startPacket.type) === (packet.typ || packet.type) ) {
+        openCalls.splice(i, 1)
+        i--
+      }
+    }
+  }
+}
+
 // Read the caller id names CSV and connect to mqtt in parallel
 const [callerIdNames, client, versionNumber]= await Promise.all([ readCallerIdNames(), mqttConnect(), readVersionNumber(currentDirectory) ])
 
@@ -58,7 +104,6 @@ const stream= new SSE()
 app.get('/stream', stream.init)
 app.get('/history', (req, resp) => resp.send(packetHistory) )
 
-let lastStartPacket= null
 client?.on('message', (topic, payload) => {
   if( topic !== process.env.MQTT_TOPIC ) {
     return
@@ -72,22 +117,6 @@ client?.on('message', (topic, payload) => {
   try {
     // Parse the json into an object to add some additional fields
     const packet= JSON.parse( jsonString )
-    // Check if this is a start packet while another start packet was not yet ended
-    if( lastStartPacket && packet.action === 'start' && !packetsHaveSameCall(lastStartPacket, packet) ) {
-      const stopPacket= {...lastStartPacket}
-      stopPacket.time= new Date().toISOString()
-      stopPacket.action= 'end'
-      transmitPacket( stopPacket )
-      lastStartPacket= null
-
-      console.log(`[Stream] Generated missing stop packet: from ${stopPacket.from} -> to ${stopPacket.to}`)
-    }
-
-    // End the last start packet if an end packet for the same call comes in
-    if( lastStartPacket && packet.action === 'end' && packetsHaveSameCall(lastStartPacket, packet) ) {
-      lastStartPacket= null
-    }
-
     packet.time= new Date().toISOString()
     packet.fromName= callerIdNames.get( parseInt(packet.from) ) || ''
 
@@ -98,11 +127,7 @@ client?.on('message', (topic, payload) => {
       packet.toName= toFieldName ? `${callType} ${toFieldName}` : ''
     }
 
-    // Remember the last start packet, as it might need to be closed manually later
-    if( packet.action === 'start' ) {
-      lastStartPacket= packet
-    }
-
+    handleOpenCalls( packet )
     transmitPacket( packet )
 
   } catch( e ) {
