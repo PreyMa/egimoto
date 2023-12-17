@@ -137,6 +137,8 @@ client?.on('message', (topic, payload) => {
   }
 })
 
+console.log(`[HELLO] Running digital voice dashboard v${versionNumber}`)
+
 const port= parseInt(process.env.PORT)
 app.listen(port, () => {
   console.log(`[HTTP] Server listening on ${port}`)
