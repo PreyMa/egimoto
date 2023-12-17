@@ -21,6 +21,11 @@ repository.
 
   Install via GitPkg: `npm install 'https://gitpkg.now.sh/PreyMa/egimoto/digital-voice-dashboard?main'`
 
+- __MMDVM Monitor:__ Monitoring application for the [MMVDM software](https://github.com/g4klx/MMDVMHost) that parses log messages to
+  send MQTT messages
+
+  Install via GitPkg: `npm install 'https://gitpkg.now.sh/PreyMa/egimoto/mmdvm-monitor?main'`
+
 ## Packages
 
 - __Mqtt Logger:__ A simple framework that allows remote logging by sending messages
