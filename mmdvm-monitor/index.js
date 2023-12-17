@@ -34,7 +34,7 @@ createInterface({ input: process.stdin }).on('error', e => {
   for( const provider of providers ) {
     const packet= provider( line )
     if( packet ) {
-      client.publish(process.env.MQTT_TOPIC, packet)
+      client.publish(process.env.MQTT_TOPIC, JSON.stringify(packet))
       break
     }
   }
