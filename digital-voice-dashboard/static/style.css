@@ -99,6 +99,12 @@ header {
   }
 }
 
+@media only screen and (max-width: 700px) {
+  header .logo span {
+    font-size: 1.15rem;
+  }
+}
+
 main {
   padding-left: var(--content-padding);
   padding-right: var(--content-padding);

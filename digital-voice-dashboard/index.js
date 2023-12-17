@@ -87,6 +87,7 @@ app.set('view engine', 'hbs')
 app.set('views', path.join(currentDirectory, '/views'))
 
 app.locals.version= versionNumber
+app.locals.repeaterCallSign= process.env.REPEATER_CALL_SIGN
 
 // Add middleware functions
 app.use(helmet())
