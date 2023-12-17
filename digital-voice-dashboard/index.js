@@ -118,12 +118,13 @@ client?.on('message', (topic, payload) => {
   try {
     // Parse the json into an object to add some additional fields
     const packet= JSON.parse( jsonString )
+    const dmrMode= (packet.typ || packet.type || '').toLowerCase().indexOf('dmr') >= 0
     packet.time= new Date().toISOString()
-    packet.fromName= callerIdNames.get( parseInt(packet.from) ) || ''
+    packet.fromName= dmrMode ? callerIdNames.get( parseInt(packet.from) ) || '' : ''
 
     // Only translate private call (PC) caller ids to names
     const [callType, toField]= packet.to.split(' ')
-    if( callType && callType.toUpperCase() === 'PC') {
+    if( dmrMode && callType && callType.toUpperCase() === 'PC') {
       const toFieldName= callerIdNames.get( parseInt(toField) )
       packet.toName= toFieldName ? `${callType} ${toFieldName}` : ''
     }
