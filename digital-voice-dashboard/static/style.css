@@ -215,6 +215,10 @@ main {
     }
   }
 
+  &.table > section {
+    overflow-x: auto;
+  }
+
   &.article {
     display: grid;
     grid-template-columns: 1fr minmax(0, 45rem) 1fr;
@@ -310,7 +314,7 @@ main {
 }
 
 footer {
-  height: 10rem;
+  min-height: 10rem;
   padding: 2rem;
   padding-right: 4rem;
   padding-top: 6rem;
@@ -332,6 +336,7 @@ footer {
 
   & li {
     margin-bottom: 0.8rem;
+    text-wrap: nowrap;
   }
 
   & a {
@@ -352,6 +357,18 @@ footer {
     font-style: italic;
     justify-content: space-evenly;
     margin-right: auto;
+  }
+}
+
+@media only screen and (max-width: 800px) {
+  footer {
+    justify-content: center;
+    flex-wrap: wrap;
+
+    & section.description {
+      max-width: 16rem;
+      margin: 0;
+    }
   }
 }
 
