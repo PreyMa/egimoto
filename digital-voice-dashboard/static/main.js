@@ -308,6 +308,10 @@ if( window.location.pathname === '/' ) {
       return this.findFirst( table, t => t.callerId === id && t.mode === mode )
     }
 
+    static findActiveByCallerIdAndMode( table, id, mode ) {
+      return this.findFirst( table, t => t.callerId === id && t.mode === mode && t.startTime >= 0 )
+    }
+
     get activeElem() { return this.tableRow.cells[0] }
     get connectionElem() { return this.tableRow.cells[1] }
     get modeElem() { return this.tableRow.cells[2] }
@@ -336,12 +340,22 @@ if( window.location.pathname === '/' ) {
         existingTalker.updateFromPacket( packet )
         return
       }
-    // Only group end packets with start packets in chronological view by user id and mode
-    } else if( packet.action === 'end' ) {
-      const existingTalker= Talker.findByCallerIdAndMode( table, packet.from, packet.type || packet.typ )
-      if( existingTalker ) {
-        existingTalker.updateFromPacket( packet )
-        return
+    // Chronological mode
+    } else {
+      // Group end packets with start packets in by user id and mode
+      if( packet.action === 'end' ) {
+        const existingTalker= Talker.findByCallerIdAndMode( table, packet.from, packet.type || packet.typ )
+        if( existingTalker ) {
+          existingTalker.updateFromPacket( packet )
+          return
+        }
+      // Group start packets of the same call to prevent multiple active entries
+      } else if( packet.action === 'start' ) {
+        const existingTalker= Talker.findActiveByCallerIdAndMode( table, packet.from, packet.type || packet.typ )
+        if( existingTalker ) {
+          existingTalker.updateFromPacket( packet )
+          return
+        }
       }
     }
 
