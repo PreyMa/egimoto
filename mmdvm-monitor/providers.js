@@ -56,7 +56,7 @@ export default [
       })
     )
   },
-  function dStarStart( line ) {
+  function dStarEnd( line ) {
     return ifMatch( line.match(/M: [\d\-:\. ]{24}D-Star, received (?<external>RF|network) end of transmission from (?<from>\w+)\s+(\/.*)? to (?<to>\w+)/),
     ({external, from, to}) => ({
         type: 'D-Star',
