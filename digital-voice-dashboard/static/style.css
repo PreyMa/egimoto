@@ -198,6 +198,14 @@ main {
       margin-right: 0.3rem;
     }
 
+    /* Caller id or name tag icon */
+    & td.caller img {
+      width: 1rem;
+      height: 1rem;
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
     & tr.placeholder {
       display: none;
 

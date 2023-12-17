@@ -133,7 +133,11 @@ if( window.location.pathname === '/' ) {
       this.startTime= -1
       this.fadeOutTimer= null
       this.callerId= config.from
-      this.mode= config.mode
+      this.mode= config.type || config.typ
+      this.callerIdsLabel= ''
+      this.callerNamesLabel= ''
+      this.showsCallerNames= true
+
       this.tableRow= document.createElement('tr')
       this.tableRow._talkerInstance= this
       
@@ -148,8 +152,15 @@ if( window.location.pathname === '/' ) {
       connectionElem.appendChild( document.createElement('img') ).src= '/online.svg'
 
       this.tableRow.appendChild( document.createElement('td') )
-      this.tableRow.appendChild( document.createElement('td') )
-      this.tableRow.appendChild( document.createElement('td') )
+
+      const callerElem= this.tableRow.appendChild( document.createElement('td') )
+      callerElem.classList.add('caller')
+      callerElem.appendChild( document.createElement('img') ).addEventListener('click', () => this.displayCallerFieldNames( !this.showsCallerNames ) )
+      callerElem.appendChild( document.createElement('span') )
+      
+      const clockElem= this.tableRow.appendChild( document.createElement('td') )
+      clockElem.innerText= '-'
+
       this.tableRow.appendChild( document.createElement('td') )
 
       this.updateFromPacket( config )
@@ -169,8 +180,9 @@ if( window.location.pathname === '/' ) {
       this.connectionElem.firstElementChild.src= external ? '/address.svg' : '/radio.svg'
 
       this.modeElem.innerText= type || typ
-      this.callerElem.innerText= `${fromName || from} → ${toName || to}`
-      this.callerElem.title= `${from} → ${to}`
+      this.callerNamesLabel= `${fromName || from} → ${toName || to}`
+      this.callerIdsLabel= `${from} → ${to}`
+      this.displayCallerFieldNames( this.showsCallerNames )
 
       const time= new Date( isoTime )
 
@@ -229,6 +241,22 @@ if( window.location.pathname === '/' ) {
       const secs= Math.floor( time % 60 )
       const mins= Math.floor( time / 60 )
       this.clockElem.innerText= `${mins}min ${secs}s`
+    }
+
+    displayCallerFieldNames( showCallerNames ) {
+      const [icon, span]= this.callerElem.children
+      if( this.showsCallerNames= showCallerNames ) {
+        icon.src= '/tag.svg'
+        icon.title= lang['show ids']
+        span.innerText= this.callerNamesLabel
+        span.title= this.callerIdsLabel
+
+      } else {
+        icon.src= '/hashtag.svg'
+        icon.title= lang['show names']
+        span.innerText= this.callerIdsLabel
+        span.title= this.callerNamesLabel
+      }
     }
 
     attach( table ) {

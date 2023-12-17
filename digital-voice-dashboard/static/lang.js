@@ -13,7 +13,9 @@ export default {
     "empty table": "Noch keine aufgezeichneten Gespräche",
     "timestamp": "Zeitstempel",
     "keep entries": "Einträge behalten",
-    "chronological": "Chronologisch"
+    "chronological": "Chronologisch",
+    "show ids": "IDs anzeigen",
+    "show names": "Namen anzeigen"
   },
   "en": {
     "Active": "Active",
@@ -29,7 +31,9 @@ export default {
     "empty table": "No connections to display yet",
     "timestamp": "Timestamp",
     "keep entries": "Keep entries",
-    "chronological": "Chronological"
+    "chronological": "Chronological",
+    "show ids": "Show IDs",
+    "show names": "Show names"
   },
   "cz": {
     "Active": "Aktivní",
@@ -45,6 +49,8 @@ export default {
     "empty table": "Zatím žádné nahrané hovory",
     "timestamp": "Časové razítko",
     "keep entries": "Uchovávejte záznamy",
-    "chronological": "Chronologický"
+    "chronological": "Chronologický",
+    "show ids": "Zobrazit ID",
+    "show names": "Zobrazit názvy"
   }
 }
