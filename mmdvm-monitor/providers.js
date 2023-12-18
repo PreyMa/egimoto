@@ -43,10 +43,16 @@ class DmrProvider extends Provider {
 }
 
 class YsfProvider extends Provider {
+  constructor() {
+    super()
+    this.lastStartPacket= null
+  }
+
   tryConsumeLine( line ) {
     return new Matcher( line )
       .match(/M: [\d\-:\. ]{24}YSF, received (?<external>RF header|network data) from (?<from>\w+)\s+to (?<to>(DG-ID )?\d+)/, groups => this._packet( groups, 'start') )
       .match(/M: [\d\-:\. ]{24}YSF, received (?<external>RF|network) end of transmission from (?<from>\w+)\s+to (?<to>(DG-ID )?\d+)/, groups => this._packet( groups, 'end') )
+      .match(/M: [\d\-:\. ]{24}YSF, network watchdog has expired/, () => this._timeoutPacket() )
       .result()
   }
 
@@ -55,6 +61,17 @@ class YsfProvider extends Provider {
       type: 'YSF',
       action, from, to,
       external: !external.startsWith('RF')
+    }
+
+    this.lastStartPacket= action === 'start' ? packet : null
+    return packet
+  }
+
+  _timeoutPacket() {
+    const packet= this.lastStartPacket
+    this.lastStartPacket= null
+    if( packet ) {
+      packet.action= 'stop'
     }
     return packet
   }
