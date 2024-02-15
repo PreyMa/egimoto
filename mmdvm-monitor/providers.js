@@ -71,7 +71,7 @@ class YsfProvider extends Provider {
     const packet= this.lastStartPacket
     this.lastStartPacket= null
     if( packet ) {
-      packet.action= 'stop'
+      packet.action= 'end'
     }
     return packet
   }
