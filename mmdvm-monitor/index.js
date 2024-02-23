@@ -26,8 +26,6 @@ client.on("reconnect", () => {
 const tail = new Tail(process.env.LOG_FILE);
 
 tail.on("line", function(data) {
-  //console.log(data);
-  //console.log("Leberkas");
   for( const provider of providers ) {
     const packet= provider.tryConsumeLine( data )
     if( packet ) {
