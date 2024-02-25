@@ -24,9 +24,14 @@ client.on("reconnect", () => {
 
 const tail = new Tail(process.env.LOG_FILE);
 
-tail.on("line", function(data) {
+tail.on("line", line => {
+  line= line.trim()
+  if( !line ) {
+    return
+  }
+
   for( const provider of providers ) {
-    const packet= provider.tryConsumeLine( data )
+    const packet= provider.tryConsumeLine( line )
     if( packet ) {
       client.publish(process.env.MQTT_TOPIC, JSON.stringify(packet))
       break
