@@ -97,7 +97,7 @@ class DStarProvider extends Provider {
 class M17Provider extends Provider {
   tryConsumeLine( line ) {
     return new Matcher( line )
-      .match(/M: [\d\-:\. ]{24}M17, received (?<external>RF late entry voice transmission|network voice transmission) from (?<from>\w+|(\w+\s+\w))\s+to (?<to>\w+)/, groups => this._packet( groups, 'start') )
+      .match(/M: [\d\-:\. ]{24}M17, received (?<external>RF (late entry )?voice transmission|network voice transmission) from (?<from>\w+|(\w+\s+\w))\s+to (?<to>\w+)/, groups => this._packet( groups, 'start') )
       .match(/M: [\d\-:\. ]{24}M17, received (?<external>RF|network) end of transmission from (?<from>\w+|(\w+\s+\w))\s+to (?<to>\w+)/, groups => this._packet( groups, 'end') )
       .result()
   }
