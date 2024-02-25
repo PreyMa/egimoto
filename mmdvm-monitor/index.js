@@ -1,6 +1,6 @@
-import { createInterface } from 'node:readline'
 import dotenv from 'dotenv'
 import mqtt from 'mqtt'
+import { Tail } from 'tail'
 import providers from './providers.js'
 
 dotenv.config()
@@ -9,23 +9,24 @@ dotenv.config()
 const client = await mqtt.connectAsync(process.env.MQTT_HOST, {
   clientId: process.env.MQTT_CLIENT,
   username: process.env.MQTT_USER,
-  password: process.env.MQTT_PASSWORD
+  password: process.env.MQTT_PASSWORD,
+  rejectUnauthorized: false
 })
 
 console.log('[MQTT] Connected to server')
 
 // Setup event listeners for errors or reconnect
-client.on("reconnect", () => {
+client.on('reconnect', () => {
   console.error('[MQTT] Reconnected to server')
 }).on('error', error => {
   console.error('[MQTT] Error:', error)
 })
 
-// Create interface to read from stdin line by line
-createInterface({ input: process.stdin }).on('error', e => {
+const tail = new Tail(process.env.LOG_FILE);
+
+tail.on('error', e => {
   console.error('Caught error while reading line:', e)
 }).on('line', line => {
-  // Ignore empty lines
   line= line.trim()
   if( !line ) {
     return
@@ -38,4 +39,5 @@ createInterface({ input: process.stdin }).on('error', e => {
       break
     }
   }
-})
+});
+

@@ -1,6 +1,6 @@
 {
   "name": "mmdvm-monitor",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "",
   "type": "module",
   "main": "index.js",
@@ -12,6 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "dotenv": "^16.3.1",
-    "mqtt": "^5.3.3"
+    "mqtt": "^5.3.3",
+    "tail": "^2.2.6"
   }
 }
