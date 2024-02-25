@@ -106,7 +106,7 @@ class M17Provider extends Provider {
     return {
       type: 'M17',
       action, from, to,
-      external: external !== 'RF'
+      external: !external.startsWith('RF')
     }
   }
 }
