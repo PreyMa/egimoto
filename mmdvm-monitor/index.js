@@ -1,4 +1,3 @@
-import { createInterface } from 'node:readline'
 import dotenv from 'dotenv'
 import mqtt from 'mqtt'
 import { Tail } from 'tail'
