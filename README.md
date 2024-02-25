@@ -33,4 +33,16 @@ repository.
 
   Install via GitPkg: `npm install 'https://gitpkg.now.sh/PreyMa/egimoto/mqtt-logger?main'`
 
+## Git Namespaces
 
+Commits and Pull-Requests use a prefix to indicate where they belong to. Each service and package
+has a unique prefix. For example, if you were to make a commit related to the proxy server service
+with the summary "Improved feature X" your commit title is supposed to read as "Proxy: Improved feature X".
+The list of all the namespaces is down below. Also, your commit title should always start capitalized.
+
+- This root ReadMe file: `ReadMe`
+- Timestamp service: `Timestamp`
+- Proxy server: `Proxy`
+- Digital Voice Dashboard: `DVD`
+- MMDVM Monitor: `MMDVM Monitor`
+- Mqtt Logger: `Logger`
