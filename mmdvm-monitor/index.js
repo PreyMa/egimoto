@@ -16,7 +16,7 @@ const client = await mqtt.connectAsync(process.env.MQTT_HOST, {
 console.log('[MQTT] Connected to server')
 
 // Setup event listeners for errors or reconnect
-client.on("reconnect", () => {
+client.on('reconnect', () => {
   console.error('[MQTT] Reconnected to server')
 }).on('error', error => {
   console.error('[MQTT] Error:', error)
@@ -26,7 +26,7 @@ const tail = new Tail(process.env.LOG_FILE);
 
 tail.on('error', e => {
   console.error('Caught error while reading line:', e)
-}).on("line", line => {
+}).on('line', line => {
   line= line.trim()
   if( !line ) {
     return
