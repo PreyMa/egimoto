@@ -24,7 +24,9 @@ client.on("reconnect", () => {
 
 const tail = new Tail(process.env.LOG_FILE);
 
-tail.on("line", line => {
+tail.on('error', e => {
+  console.error('Caught error while reading line:', e)
+}).on("line", line => {
   line= line.trim()
   if( !line ) {
     return
@@ -37,9 +39,5 @@ tail.on("line", line => {
       break
     }
   }
-});
-
-tail.on("error", function(error) {
-  console.log('ERROR: ', error);
 });
 
